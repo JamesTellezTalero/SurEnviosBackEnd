@@ -1,12 +1,17 @@
-import { getManager } from "typeorm";
+import { createQueryBuilder, getManager } from "typeorm";
+import { Camion } from "../entities/Camion";
 import { Cliente } from "../entities/Cliente";
+import { ElementoRegistro } from "../entities/ElementoRegistro";
 import { EstadoServicio } from "../entities/EstadoServicio";
 import { Municipio } from "../entities/Municipio";
 import { RegistroServicio } from "../entities/RegistroServicio";
 import { Servicio } from "../entities/Servicio";
 import { TipoCamion } from "../entities/TipoCamion";
+import { TipoElementoRegistro } from "../entities/TipoElementoRegistro";
+import { ElementoRegistroRequest } from "../models/ElementoRegistroRequest";
 import { RegistroServicioModel } from "../models/RegistroServicioModel";
 import { ServicioModel } from "../models/ServicioModel";
+import { writeFile, writeFileSync  } from 'fs';
 
 export class ServicioBusiness
 {
@@ -33,6 +38,10 @@ export class ServicioBusiness
         newServicio.idTipoCamion=await getManager().getRepository(TipoCamion).findOne({where:{id:servicio.idTipoCamion}});
         newServicio.valor=servicio.valor;
         newServicio.fechaSolicitud=new Date();
+        newServicio.latOrigen=servicio.latOrigen;
+        newServicio.lonOrigen=servicio.lonOrigen;
+        newServicio.latDest=servicio.latDest;
+        newServicio.lonDest=servicio.lonDest;
         newServicio = await getManager().getRepository(Servicio).save(newServicio);
 
         var registroServicio:RegistroServicio=new RegistroServicio();
@@ -59,6 +68,14 @@ export class ServicioBusiness
             where:{id:servicio.idCiudadDestino},
             relations:["idDepartamento"]
         });
+        if(servicio.idCamion!=null)
+        {
+            var camion=await getManager().getRepository(Camion).findOne({where:{id:servicio.idCamion}});
+            if(camion!=null)
+            {
+                currentService.idCamion=camion;
+            }
+        }
         currentService.descripcionCarga=servicio.descripcionCarga;
         currentService.direccionOrigen=servicio.direccionOrigen;
         currentService.direccionDestino=servicio.direccionDestino;
@@ -80,10 +97,24 @@ export class ServicioBusiness
         registroServicio.idEstadoServicio = await getManager().getRepository(EstadoServicio).findOne({where:{id:registro.idEstadoServicio}});
         registroServicio.observacion = registro.observacion;
         registroServicio.fechaRegistro = registro.fechaRegistro;
-        getManager().getRepository(RegistroServicio).save(registroServicio);
+        registroServicio = await getManager().getRepository(RegistroServicio).save(registroServicio);
         servicio.estadoServicio=registroServicio.idEstadoServicio;
-        var servicio=await getManager().getRepository(Servicio).save(servicio);
-        return servicio;
+        await getManager().getRepository(Servicio).save(servicio);
+        return registroServicio;
+    }
+
+    async AddElementoRegistro(elemento:ElementoRegistroRequest):Promise<ElementoRegistro>
+    {
+        var registro=await getManager().getRepository(RegistroServicio).findOne({where:{id:elemento.IdRegistroServicio}});
+        var tipoElemento=await getManager().getRepository(TipoElementoRegistro).findOne({where:{id:elemento.IdTipoElemento}});
+        var newElemento:ElementoRegistro =new ElementoRegistro();
+        newElemento.idRegistroServicio=registro;
+        newElemento.idTipoElemento=tipoElemento;
+        var filename='img'+registro.id+'-'+Date.now()+'.jpg';
+        writeFileSync(filename, elemento.elemento);
+        newElemento.elemento=filename;
+        newElemento=await getManager().getRepository(ElementoRegistro).save(newElemento);
+        return newElemento;
     }
 
     async GetServicios(estado:string):Promise<Servicio[]>
@@ -91,6 +122,38 @@ export class ServicioBusiness
         var item=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:estado}});
         var servicios=await getManager().getRepository(Servicio).find({where:{estadoServicio:item}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago"]});
         return servicios;
+    }
+
+    async GetServiciosByCamionActivos(idCamion:number):Promise<Servicio[]>
+    {
+        var camion=await getManager().getRepository(Camion).findOne({where:{id:idCamion}});
+        var estadoAsignado=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Programado"}});
+        var estadoRecep=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Recepcionado"}});
+        var servicios=await getManager().getRepository(Servicio).find({
+            where:
+            [
+                {idCamion:camion, estadoServicio:estadoAsignado},
+                {idCamion:camion, estadoServicio:estadoRecep}
+            ], 
+            relations:["idCliente", "idCiudadOrigen", "idCiudadDestino", "idTipoCamion", "estadoServicio", "pagos", "pagos.idMedioPago"]
+        });
+        return servicios;
+    }
+
+    async GetServiciosByCamion(idCamion:number, estado:string ):Promise<Servicio[]>
+    {
+        var camion=await getManager().getRepository(Camion).findOne({where:{id:idCamion}});
+        if(estado!=null && estado!='')
+        {
+            var status=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:estado}});
+            var servicios=await getManager().getRepository(Servicio).find({where:{idCamion:camion, estadoServicio:status }, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino", "idTipoCamion", "estadoServicio", "pagos", "pagos.idMedioPago"]});
+            return servicios;
+        }
+        else
+        {
+            var servicios=await getManager().getRepository(Servicio).find({where:{idCamion:camion }, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino", "idTipoCamion", "estadoServicio", "pagos", "pagos.idMedioPago"]});
+            return servicios;
+        }
     }
 
     async GetServicio(id:number):Promise<Servicio>

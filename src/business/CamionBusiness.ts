@@ -32,4 +32,36 @@ export class CamionBusiness
         .getMany();
         return operators;
     }
+
+    async GetCamionById(id:number)
+    {
+        var camion=await getManager().getRepository(Camion).findOne(
+        {
+            where:{id:id},
+            relations:["idTipoCamion","idTipoVinculacion","propietario","camionPos","tripulantes"]
+        });
+        return camion;
+    }
+
+    Login(username:string, pwd:string):Promise<Camion> {
+        var data = getManager().getRepository(Camion).findOne({ 
+            where: {
+                userName:username,
+                password:pwd
+            },
+            relations:["idTipoCamion","idTipoVinculacion","propietario","camionPos","tripulantes"]
+        });
+        return data;
+    }
+
+    async UpdatePos(id:number, lat:number, lon:number)
+    {
+        var curPos=await getManager().getRepository(CamionPos).findOne({where:{idCamion:id}});
+        if(curPos!=null)
+        {
+            curPos.lat=lat;
+            curPos.lon=lon;
+            getManager().getRepository(CamionPos).save(curPos);
+        }
+    }
 }

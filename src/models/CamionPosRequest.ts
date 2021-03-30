@@ -4,6 +4,9 @@ import { jsonMember, jsonObject } from "typedjson";
 export class CamionPosRequest
 {
     @jsonMember
+    idCamion:string;
+
+    @jsonMember
     lat:string;
 
     @jsonMember
@@ -11,6 +14,11 @@ export class CamionPosRequest
 
     @jsonMember
     idTipoCamion:string;
+
+    get IdCamion():number
+    {
+        return parseInt(this.idCamion);
+    }    
 
     get Lat():number{
         return parseFloat(this.lat);

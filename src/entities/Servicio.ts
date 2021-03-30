@@ -9,10 +9,11 @@ import {
 } from "typeorm";
 import { Pago } from "./Pago";
 import { RegistroServicio } from "./RegistroServicio";
+import { Camion } from "./Camion";
 import { EstadoServicio } from "./EstadoServicio";
+import { TipoCamion } from "./TipoCamion";
 import { Cliente } from "./Cliente";
 import { Municipio } from "./Municipio";
-import { TipoCamion } from "./TipoCamion";
 
 @Index("PK_Servicio", ["id"], { unique: true })
 @Entity("Servicio", { schema: "dbo" })
@@ -35,6 +36,18 @@ export class Servicio {
   @Column("float", { name: "Valor", precision: 53 })
   valor: number;
 
+  @Column("float", { name: "latOrigen", nullable: true, precision: 53 })
+  latOrigen: number | null;
+
+  @Column("float", { name: "lonOrigen", nullable: true, precision: 53 })
+  lonOrigen: number | null;
+
+  @Column("float", { name: "latDest", nullable: true, precision: 53 })
+  latDest: number | null;
+
+  @Column("float", { name: "lonDest", nullable: true, precision: 53 })
+  lonDest: number | null;
+
   @OneToMany(() => Pago, (pago) => pago.idServicio)
   pagos: Pago[];
 
@@ -44,9 +57,17 @@ export class Servicio {
   )
   registroServicios: RegistroServicio[];
 
+  @ManyToOne(() => Camion, (camion) => camion.servicios)
+  @JoinColumn([{ name: "IdCamion", referencedColumnName: "id" }])
+  idCamion: Camion;
+
   @ManyToOne(() => EstadoServicio, (estadoServicio) => estadoServicio.servicios)
   @JoinColumn([{ name: "EstadoServicio", referencedColumnName: "id" }])
   estadoServicio: EstadoServicio;
+
+  @ManyToOne(() => TipoCamion, (tipoCamion) => tipoCamion.servicios)
+  @JoinColumn([{ name: "IdTipoCamion", referencedColumnName: "id" }])
+  idTipoCamion: TipoCamion;
 
   @ManyToOne(() => Cliente, (cliente) => cliente.servicios)
   @JoinColumn([{ name: "IdCliente", referencedColumnName: "id" }])
@@ -59,8 +80,4 @@ export class Servicio {
   @ManyToOne(() => Municipio, (municipio) => municipio.servicios2)
   @JoinColumn([{ name: "IdCiudadDestino", referencedColumnName: "id" }])
   idCiudadDestino: Municipio;
-
-  @ManyToOne(() => TipoCamion, (tipoCamion) => tipoCamion.servicios)
-  @JoinColumn([{ name: "IdTipoCamion", referencedColumnName: "id" }])
-  idTipoCamion: TipoCamion;
 }

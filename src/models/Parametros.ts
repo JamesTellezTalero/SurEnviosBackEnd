@@ -7,6 +7,7 @@ import { TipoPago } from "../entities/TipoPago";
 import { TipoTripulante } from "../entities/TipoTripulante";
 import { TipoVinculacion } from "../entities/TipoVinculacion";
 import { Parametros as Params } from "../entities/Parametros";
+import { TipoElementoRegistro } from "../entities/TipoElementoRegistro";
 
 export class Parametros
 {
@@ -25,6 +26,8 @@ export class Parametros
     tiposTripulante:TipoTripulante[];
 
     tiposPago:TipoPago[];
+
+    tiposElemento:TipoElementoRegistro[]
 
     parametros:Params[];
 

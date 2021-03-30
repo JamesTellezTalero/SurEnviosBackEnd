@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
@@ -12,6 +13,7 @@ import { TipoCamion } from "./TipoCamion";
 import { TipoVinculacion } from "./TipoVinculacion";
 import { Propietario } from "./Propietario";
 import { CamionPos } from "./CamionPos";
+import { Servicio } from "./Servicio";
 import { Tripulante } from "./Tripulante";
 
 @Index("PK_Camion", ["id"], { unique: true })
@@ -32,6 +34,12 @@ export class Camion {
   @Column("bit", { name: "Estado", default: () => "(0)" })
   estado: boolean;
 
+  @Column("varchar", { name: "UserName", nullable: true, length: 100 })
+  userName: string | null;
+
+  @Column("varchar", { name: "Password", nullable: true, length: 100 })
+  password: string | null;
+
   @ManyToOne(() => TipoCamion, (tipoCamion) => tipoCamion.camions)
   @JoinColumn([{ name: "IdTipoCamion", referencedColumnName: "id" }])
   idTipoCamion: TipoCamion;
@@ -49,6 +57,9 @@ export class Camion {
 
   @OneToOne(() => CamionPos, (camionPos) => camionPos.idCamion2)
   camionPos: CamionPos;
+
+  @OneToMany(() => Servicio, (servicio) => servicio.idCamion)
+  servicios: Servicio[];
 
   @ManyToMany(() => Tripulante, (tripulante) => tripulante.camions)
   tripulantes: Tripulante[];

@@ -11,6 +11,7 @@ import { dbConfig } from './dbConfig';
 import { Usuario } from './entities/Usuario';
 import { CamionPosRequest } from './models/CamionPosRequest';
 import { ClienteRequest } from './models/ClienteRequest';
+import { ElementoRegistroRequest } from './models/ElementoRegistroRequest';
 import { GenericRequest } from './models/GenericRequest';
 import { LoginRequest } from './models/LoginRequest';
 import { PushTokenRequest } from './models/PushTokenRequest';
@@ -33,8 +34,8 @@ const ServicioB = new ServicioBusiness();
 const ParametrosB=new ParametrosBusiness();
 const CamionB=new CamionBusiness();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(bodyParser.json({limit: '50mb', extended: true}))
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
 
 
 app.get('/',(req, res)=>{
@@ -78,11 +79,11 @@ app.post('/loginCliente', (req, res)=>{
 app.post('/GetCliente', async (req, res)=> {
     var response:Response=new Response();
     try{            
-        var serializer = new TypedJSON(ClienteRequest);
+        var serializer = new TypedJSON(GenericRequest);
         var usrReq=serializer.parse(req.body);
         if(usrReq!=null)
         {
-            var usuario=await ClienteB.GetPerfil(usrReq.IdUsuario);
+            var usuario=await ClienteB.GetPerfil(usrReq.Id);
             if(usuario!=null)
             {
                 response.Message="";
@@ -125,7 +126,7 @@ app.post('/UpdateCliente', async(req, res)=> {
         {
             await ClienteB.UpdatePerfil(usrReq.Usuario);
             response.Message="Perfil actualizado exitosamente";
-            response.Type=TypeResponse.Ok,
+            response.Type=TypeResponse.Ok;
             response.Value=JSON.stringify(usrReq.Usuario);
             res.send(response);
         }
@@ -196,13 +197,13 @@ app.post('/CreateCliente', async(req, res)=>{
             if(newUser!=null)
             {
                 response.Message="Perfil creado exitosamente";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=JSON.stringify(newUser);
             }
             else
             {
                 response.Message="El correo electrónico ya se encuentra registrado";
-                response.Type=TypeResponse.Error,
+                response.Type=TypeResponse.Error;
                 response.Value=null;
             }
             res.send(response);
@@ -237,7 +238,7 @@ app.post('/UpdatePwdCliente', async(req,res)=>{
                 usuario.password = usrReq.newPwd;
                 await ClienteB.UpdatePerfil(usuario);
                 response.Message="Contraseña actualizada exitosamente";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=null;
             }
             else
@@ -277,7 +278,7 @@ app.post('/RecoverPasswordCliente', async(req, res)=>{
             if(usuario)
             {
                 response.Message="Se ha enviado un correo electrónico con la nueva contraseña.";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=null;
             }
             else
@@ -391,7 +392,7 @@ app.post('/UpdateUsuario', async(req, res)=> {
         {
             await UsuarioB.UpdatePerfil(usrReq.Usuario);
             response.Message="Perfil actualizado exitosamente";
-            response.Type=TypeResponse.Ok,
+            response.Type=TypeResponse.Ok;
             response.Value=JSON.stringify(usrReq.Usuario);
             res.send(response);
         }
@@ -425,13 +426,13 @@ app.post('/CreateUsuario', async(req, res)=>{
             if(newUser!=null)
             {
                 response.Message="Perfil creado exitosamente";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=JSON.stringify(newUser);
             }
             else
             {
                 response.Message="El correo electrónico ya se encuentra registrado";
-                response.Type=TypeResponse.Error,
+                response.Type=TypeResponse.Error;
                 response.Value=null;
             }
             res.send(response);
@@ -466,7 +467,7 @@ app.post('/UpdatePwdUsuario', async(req,res)=>{
                 usuario.password = usrReq.newPwd;
                 await UsuarioB.UpdatePerfil(usuario);
                 response.Message="Contraseña actualizada exitosamente";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=null;
             }
             else
@@ -506,7 +507,7 @@ app.post('/RecoverPasswordUsuario', async(req, res)=>{
             if(usuario)
             {
                 response.Message="Se ha enviado un correo electrónico con la nueva contraseña.";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=null;
             }
             else
@@ -548,13 +549,13 @@ app.post('/CrearServicio', async(req, res)=>{
             if(newUser!=null)
             {
                 response.Message="Servicio creado exitosamente";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=JSON.stringify(newUser);
             }
             else
             {
                 response.Message="No se pudo crear el servicio";
-                response.Type=TypeResponse.Error,
+                response.Type=TypeResponse.Error;
                 response.Value=null;
             }
             res.send(response);
@@ -588,13 +589,13 @@ app.post('/UpdateServicio', async(req, res)=>{
             if(newUser!=null)
             {
                 response.Message="Servicio actualizado exitosamente";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=JSON.stringify(newUser);
             }
             else
             {
                 response.Message="No se pudo actualizar el servicio";
-                response.Type=TypeResponse.Error,
+                response.Type=TypeResponse.Error;
                 response.Value=null;
             }
             res.send(response);
@@ -628,13 +629,13 @@ app.post('/CrearRegistroServicio', async(req, res)=>{
             if(newReg!=null)
             {
                 response.Message="Servicio actualizado exitosamente";
-                response.Type=TypeResponse.Ok,
+                response.Type=TypeResponse.Ok;
                 response.Value=JSON.stringify(newReg);
             }
             else
             {
                 response.Message="No se pudo actualizar el servicio";
-                response.Type=TypeResponse.Error,
+                response.Type=TypeResponse.Error;
                 response.Value=null;
             }
             res.send(response);
@@ -644,6 +645,126 @@ app.post('/CrearRegistroServicio', async(req, res)=>{
             response.Message="Parámetros enviados incorrectos";
             response.Type=TypeResponse.Error;
             response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/CrearElementoRegistro',async(req, res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(ElementoRegistroRequest);
+        var regSrvReq=serializer.parse(req.body);
+        if(regSrvReq!=null)
+        {
+            var newReg = await ServicioB.AddElementoRegistro(regSrvReq);
+            if(newReg!=null)
+            {
+                response.Message="Servicio actualizado exitosamente";
+                response.Type=TypeResponse.Ok;
+                response.Value=null;
+            }
+            else
+            {
+                response.Message="No se pudo actualizar el servicio";
+                response.Type=TypeResponse.Error;
+                response.Value=null;
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="Parámetros enviados incorrectos";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/GetServiciosByCamion', async(req,res)=>{
+    var response:Response=new Response();
+    try{            
+        var serializer = new TypedJSON(GenericRequest);
+        var genReq=serializer.parse(req.body);
+        if(genReq!=null)
+        {
+            var servicios=await ServicioB.GetServiciosByCamion(genReq.Id, genReq.estado);
+            if(servicios!=null)
+            {
+                response.Message="";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(servicios);
+            }
+            else
+            {
+                response.Message="No se encontraron servicios";
+                response.Type=TypeResponse.Error;
+                response.Value=null
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="Solicitud Incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+            res.send(response);
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/GetServiciosByCamionActivos', async(req,res)=>{
+    var response:Response=new Response();
+    try{            
+        var serializer = new TypedJSON(GenericRequest);
+        var genReq=serializer.parse(req.body);
+        if(genReq!=null)
+        {
+            var servicios=await ServicioB.GetServiciosByCamionActivos(genReq.Id);
+            if(servicios!=null)
+            {
+                response.Message="";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(servicios);
+            }
+            else
+            {
+                response.Message="No se encontraron servicios";
+                response.Type=TypeResponse.Error;
+                response.Value=null
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="Solicitud Incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+            res.send(response);
         }
     }
     catch(error)
@@ -736,6 +857,79 @@ app.post('/GetServicio', async(req,res)=>{
     }
 });
 
+app.post('/loginCamion', (req, res)=>{
+    var response:Response=new Response();
+    var serializer = new TypedJSON(LoginRequest);
+    var logReq=serializer.parse(req.body);
+    if(logReq!=null)
+    {
+        var userLogged = CamionB.Login(logReq.username.trim(),logReq.password.trim());
+        userLogged.then((result)=> {
+            if(result!=null)
+            {
+                response.Message="";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(result);
+            }   
+            else
+            {
+                response.Message="Usuario no existe o contraseña incorrecta";
+                response.Type=TypeResponse.Error;
+                response.Value=null;
+            }
+            res.send(response);
+        });
+    }
+    else
+    {
+        response.Message="Solicitud Incorrecta";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+    
+});
+
+app.post('/GetCamion', async(req,res)=>{
+    var response:Response=new Response();
+    try{            
+        var serializer = new TypedJSON(GenericRequest);
+        var genReq=serializer.parse(req.body);
+        if(genReq!=null)
+        {
+            var camion=await CamionB.GetCamionById(genReq.Id);
+            if(camion!=null)
+            {
+                response.Message="";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(camion);
+            }
+            else
+            {
+                response.Message="No se encontraron registros";
+                response.Type=TypeResponse.Error;
+                response.Value=null
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="Solicitud Incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+            res.send(response);
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
 app.post('/GetCamionesByPos', async(req,res)=>{
     var response:Response=new Response();
     try{            
@@ -776,6 +970,36 @@ app.post('/GetCamionesByPos', async(req,res)=>{
     }
 });
 
+app.post('/UpdateCamionPos', async(req, res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(CamionPosRequest);
+        var genReq=serializer.parse(req.body);
+        if(genReq!=null)
+        {
+            CamionB.UpdatePos(genReq.IdCamion,genReq.Lat,genReq.Lon);
+            response.Message="";
+            response.Type=TypeResponse.Ok;
+            response.Value=null;
+            res.send(response);
+        }
+        else
+        {
+            response.Message="Parámetros enviados incorrectos";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
 
 app.post('/GetParametros',async(req, res)=>{
     var response:Response=new Response();

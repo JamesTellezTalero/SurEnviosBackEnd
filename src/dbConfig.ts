@@ -20,12 +20,15 @@ import { TipoVinculacion } from "./entities/TipoVinculacion";
 import { Tripulante } from "./entities/Tripulante";
 import { Usuario } from "./entities/Usuario";
 import { Parametros } from "./entities/Parametros";
+import { ElementoRegistro } from "./entities/ElementoRegistro";
+import { TipoElementoRegistro } from "./entities/TipoElementoRegistro";
 const dbConfig: ConnectionOptions = {
     type: "mssql",
     host: "rationalsoftware.ddns.net",
     port: 1433,
     username: "sa",
     password: "$lcs1648_*",
+    maxQueryExecutionTime:120000,
     database: "SurEnvios",
     schema: "dbo",
     entities: [
@@ -34,6 +37,7 @@ const dbConfig: ConnectionOptions = {
       CategoriaCamion,
       Cliente,
       Departamento,
+      ElementoRegistro,
       EstadoServicio,
       Municipio,
       Pago,
@@ -44,11 +48,12 @@ const dbConfig: ConnectionOptions = {
       Servicio,
       TipoCamion,
       TipoDocumento,
+      TipoElementoRegistro,
       TipoPago,
       TipoTripulante,
       TipoVinculacion,
       Tripulante,
-      Usuario
+      Usuario,
     ],
     synchronize: false,
     logging: false,

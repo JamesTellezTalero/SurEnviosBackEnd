@@ -12,8 +12,9 @@ export class ClienteBusiness{
                 password:Clave
             },
             relations:[
-                "IdCiudad",
-                "Servicios"
+                "idCiudad",
+                "idTipoDocumento",
+                //"servicios"
             ]
         });
         return data;
@@ -30,10 +31,11 @@ export class ClienteBusiness{
 
     GetPerfil(Id:number):Promise<Cliente> { 
         var data = getManager().getRepository(Cliente).findOne({
-            where:{Id:Id},
+            where:{id:Id},
             relations:[
-                "IdCiudad",
-                "Servicios"
+                "idCiudad",
+                "idTipoDocumento",
+                //"servicios"
             ]
         });
         return data;

@@ -35,4 +35,19 @@ export class ServicioModel
 
     @jsonMember
     idTipoCamion: number;
+
+    @jsonMember
+    idCamion?:number;
+
+    @jsonMember
+    latOrigen:number;
+
+    @jsonMember
+    lonOrigen:number;
+
+    @jsonMember
+    latDest:number;
+    
+    @jsonMember
+    lonDest:number;
 }

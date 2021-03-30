@@ -4,8 +4,10 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { ElementoRegistro } from "./ElementoRegistro";
 import { Servicio } from "./Servicio";
 import { EstadoServicio } from "./EstadoServicio";
 
@@ -20,6 +22,12 @@ export class RegistroServicio {
 
   @Column("varchar", { name: "Observacion", nullable: true })
   observacion: string | null;
+
+  @OneToMany(
+    () => ElementoRegistro,
+    (elementoRegistro) => elementoRegistro.idRegistroServicio
+  )
+  elementoRegistros: ElementoRegistro[];
 
   @ManyToOne(() => Servicio, (servicio) => servicio.registroServicios)
   @JoinColumn([{ name: "IdServicio", referencedColumnName: "id" }])
