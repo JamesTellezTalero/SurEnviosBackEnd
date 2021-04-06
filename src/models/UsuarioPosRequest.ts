@@ -1,10 +1,10 @@
 import { jsonMember, jsonObject } from "typedjson";
 
 @jsonObject
-export class CamionPosRequest
+export class UsuarioPosRequest
 {
     @jsonMember
-    idCamion:string;
+    idUsuario:string;
 
     @jsonMember
     lat:string;
@@ -13,11 +13,11 @@ export class CamionPosRequest
     lon:string;
 
     @jsonMember
-    idTipoCamion:string;
+    idTipoVehiculo:string;
 
-    get IdCamion():number
+    get IdUsuario():number
     {
-        return parseInt(this.idCamion);
+        return parseInt(this.idUsuario);
     }    
 
     get Lat():number{
@@ -28,7 +28,7 @@ export class CamionPosRequest
         return parseFloat(this.lon);
     }
 
-    get IdTipoCamion():number{
-        return parseInt(this.idTipoCamion);
+    get IdTipoVehiculo():number{
+        return parseInt(this.idTipoVehiculo);
     }
 }

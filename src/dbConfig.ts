@@ -1,8 +1,8 @@
 import { ClientRequest } from "http";
 import { ConnectionOptions } from "typeorm";
-import { Camion } from "./entities/Camion";
-import { CamionPos } from "./entities/CamionPos";
-import { CategoriaCamion } from "./entities/CategoriaCamion";
+import { Vehiculo } from "./entities/Vehiculo";
+import { UsuarioPos } from "./entities/UsuarioPos";
+import { CategoriaVehiculo } from "./entities/CategoriaVehiculo";
 import { Cliente } from "./entities/Cliente";
 import { Departamento } from "./entities/Departamento";
 import { EstadoServicio } from "./entities/EstadoServicio";
@@ -12,16 +12,23 @@ import { Propietario } from "./entities/Propietario";
 import { Regional } from "./entities/Regional";
 import { RegistroServicio } from "./entities/RegistroServicio";
 import { Servicio } from "./entities/Servicio";
-import { TipoCamion } from "./entities/TipoCamion";
+import { TipoVehiculo } from "./entities/TipoVehiculo";
 import { TipoDocumento } from "./entities/TipoDocumento";
 import { TipoPago } from "./entities/TipoPago";
 import { TipoTripulante } from "./entities/TipoTripulante";
 import { TipoVinculacion } from "./entities/TipoVinculacion";
-import { Tripulante } from "./entities/Tripulante";
+
 import { Usuario } from "./entities/Usuario";
 import { Parametros } from "./entities/Parametros";
 import { ElementoRegistro } from "./entities/ElementoRegistro";
 import { TipoElementoRegistro } from "./entities/TipoElementoRegistro";
+import { Perfil } from "./entities/Perfil";
+import { Persona } from "./entities/Persona";
+import { TipoServicio } from "./entities/TipoServicio";
+import { TripulanteVehiculo } from "./entities/TripulanteVehiculo";
+import { PushNotificationData } from "./entities/PushNotificationData";
+import { UsuarioRequest } from "./entities/UsuarioRequest";
+
 const dbConfig: ConnectionOptions = {
     type: "mssql",
     host: "rationalsoftware.ddns.net",
@@ -32,9 +39,7 @@ const dbConfig: ConnectionOptions = {
     database: "SurEnvios",
     schema: "dbo",
     entities: [
-      Camion,
-      CamionPos,
-      CategoriaCamion,
+      CategoriaVehiculo,
       Cliente,
       Departamento,
       ElementoRegistro,
@@ -42,18 +47,25 @@ const dbConfig: ConnectionOptions = {
       Municipio,
       Pago,
       Parametros,
+      Perfil,
+      Persona,
       Propietario,
+      PushNotificationData,
       Regional,
       RegistroServicio,
       Servicio,
-      TipoCamion,
       TipoDocumento,
       TipoElementoRegistro,
       TipoPago,
+      TipoServicio,
       TipoTripulante,
+      TipoVehiculo,
       TipoVinculacion,
-      Tripulante,
+      TripulanteVehiculo,
       Usuario,
+      UsuarioPos,
+      UsuarioRequest,
+      Vehiculo,
     ],
     synchronize: false,
     logging: false,

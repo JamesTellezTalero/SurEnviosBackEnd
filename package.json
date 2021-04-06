@@ -17,7 +17,7 @@
       "reflect-metadata": "^0.1.10",
       "typedjson": "^1.6.0-rc4",
       "typeorm": "0.2.29",
-      "ws": "^7.4.3"
+      "ws": "^7.4.4"
    },
    "scripts": {
       "start": "ts-node src/index.ts"

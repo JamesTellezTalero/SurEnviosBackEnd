@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Cliente } from "./Cliente";
-import { Regional } from "./Regional";
 import { Departamento } from "./Departamento";
+import { Regional } from "./Regional";
 import { Propietario } from "./Propietario";
 import { Servicio } from "./Servicio";
 
@@ -31,13 +31,13 @@ export class Municipio {
   @OneToMany(() => Cliente, (cliente) => cliente.idCiudad)
   clientes: Cliente[];
 
-  @ManyToOne(() => Regional, (regional) => regional.municipios)
-  @JoinColumn([{ name: "Regional", referencedColumnName: "id" }])
-  regional: Regional;
-
   @ManyToOne(() => Departamento, (departamento) => departamento.municipios)
   @JoinColumn([{ name: "IdDepartamento", referencedColumnName: "id" }])
   idDepartamento: Departamento;
+
+  @ManyToOne(() => Regional, (regional) => regional.municipios)
+  @JoinColumn([{ name: "Regional", referencedColumnName: "id" }])
+  regional: Regional;
 
   @OneToMany(() => Propietario, (propietario) => propietario.idCiudad)
   propietarios: Propietario[];

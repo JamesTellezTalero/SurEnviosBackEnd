@@ -1,15 +1,16 @@
+import * as ws from 'ws';
 import * as express from 'express';
 import "reflect-metadata";
 import { TypedJSON } from 'typedjson';
 import {createConnection} from "typeorm";
-import { CamionBusiness } from './business/CamionBusiness';
+import { VehiculoBusiness } from './business/VehiculoBusiness';
 import { ClienteBusiness } from './business/ClienteBusiness';
 import { ParametrosBusiness } from './business/ParametrosBusiness';
 import { ServicioBusiness } from './business/ServicioBusiness';
 import { UsuarioBusiness } from './business/UsuarioBusiness';
 import { dbConfig } from './dbConfig';
 import { Usuario } from './entities/Usuario';
-import { CamionPosRequest } from './models/CamionPosRequest';
+import { UsuarioPosRequest } from './models/UsuarioPosRequest';
 import { ClienteRequest } from './models/ClienteRequest';
 import { ElementoRegistroRequest } from './models/ElementoRegistroRequest';
 import { GenericRequest } from './models/GenericRequest';
@@ -21,6 +22,19 @@ import { RegistroServicioRequest } from './models/RegistroServicioRequest';
 import { Response, TypeResponse } from './models/Response';
 import { ServicioRequest } from './models/ServicioRequest';
 import { UsuarioRequest } from './models/UsuarioRequest';
+import { SocketBusiness } from './socket/SocketBusiness';
+import { SocketServer } from './socket/SocketServer';
+import { SocketModel, SocketParameter } from './models/SocketModel';
+
+const ClienteB = new ClienteBusiness();
+const UsuarioB = new UsuarioBusiness();
+const ServicioB = new ServicioBusiness();
+const ParametrosB=new ParametrosBusiness();
+const VehiculoB=new VehiculoBusiness();
+const SocketB=new SocketBusiness();
+const WSServer=new SocketServer();
+
+WSServer.StartSocket();
 
 const port=3000;
 createConnection(dbConfig).catch((error)=>console.log(error));
@@ -28,11 +42,7 @@ console.log("connected");
 const bodyParser = require('body-parser');
 const app = express();
 
-const ClienteB = new ClienteBusiness();
-const UsuarioB = new UsuarioBusiness();
-const ServicioB = new ServicioBusiness();
-const ParametrosB=new ParametrosBusiness();
-const CamionB=new CamionBusiness();
+
 
 app.use(bodyParser.json({limit: '50mb', extended: true}))
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
@@ -43,28 +53,26 @@ app.get('/',(req, res)=>{
 });
 //#region Cliente
 
-app.post('/loginCliente', (req, res)=>{
+app.post('/loginCliente',async (req, res)=>{
     var response:Response=new Response();
     var serializer = new TypedJSON(LoginRequest);
     var logReq=serializer.parse(req.body);
     if(logReq!=null)
     {
-        var userLogged = ClienteB.Login(logReq.username.trim(),logReq.password.trim());
-        userLogged.then((result)=> {
-            if(result!=null)
-            {
-                response.Message="";
-                response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(result);
-            }   
-            else
-            {
-                response.Message="Usuario no existe o contraseña incorrecta";
-                response.Type=TypeResponse.Error;
-                response.Value=null;
-            }
-            res.send(response);
-        });
+        var userLogged = await ClienteB.Login(logReq.username.trim(),logReq.password.trim());
+        if(userLogged!=null)
+        {
+            response.Message="";
+            response.Type=TypeResponse.Ok;
+            response.Value=JSON.stringify(userLogged);
+        }   
+        else
+        {
+            response.Message="Usuario no existe o contraseña incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+        res.send(response);
     }
     else
     {
@@ -311,35 +319,45 @@ app.post('/RecoverPasswordCliente', async(req, res)=>{
 //#region Usuario
 app.post('/loginUsuario', (req, res)=>{
     var response:Response=new Response();
-    var serializer = new TypedJSON(LoginRequest);
-    var logReq=serializer.parse(req.body);
-    if(logReq!=null)
+    try
     {
-        var userLogged = UsuarioB.Login(logReq.username.trim(),logReq.password.trim());
-        userLogged.then((result)=> {
-            if(result!=null)
-            {
-                response.Message="";
-                response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(result);
-            }   
-            else
-            {
-                response.Message="Usuario no existe o contraseña incorrecta";
-                response.Type=TypeResponse.Error;
-                response.Value=null;
-            }
+        var serializer = new TypedJSON(LoginRequest);
+        var logReq=serializer.parse(req.body);
+        if(logReq!=null)
+        {
+            var userLogged = UsuarioB.Login(logReq.username.trim(),logReq.password.trim());
+            userLogged.then((result)=> {
+                if(result!=null)
+                {
+                    response.Message="";
+                    response.Type=TypeResponse.Ok;
+                    response.Value=JSON.stringify(result);
+                }   
+                else
+                {
+                    response.Message="Usuario no existe o contraseña incorrecta";
+                    response.Type=TypeResponse.Error;
+                    response.Value=null;
+                }
+                res.send(response);
+            });
+        }
+        else
+        {
+            response.Message="Solicitud Incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
             res.send(response);
-        });
+        }
     }
-    else
+    catch(error)
     {
-        response.Message="Solicitud Incorrecta";
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
         response.Type=TypeResponse.Error;
         response.Value=null;
         res.send(response);
     }
-    
 });
 
 app.post('/GetUsuario', async (req, res)=> {
@@ -545,20 +563,38 @@ app.post('/CrearServicio', async(req, res)=>{
         var srvReq=serializer.parse(req.body);
         if(srvReq!=null)
         {
-            var newUser = await ServicioB.CrearServicioCliente(srvReq.Servicio);
-            if(newUser!=null)
+            var newServ = await ServicioB.CrearServicioCliente(srvReq.Servicio);
+            if(newServ!=null)
             {
                 response.Message="Servicio creado exitosamente";
                 response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(newUser);
+                response.Value=JSON.stringify(newServ);
+                res.send(response);
+                SocketB.removeAllListeners();
+                    SocketB.on('SendServicio', (idUser, servicio)=>{
+                        var myglobal:any = global;
+                        var item=myglobal.sockets.find(m=>m.idUsuario==idUser);
+                        if(item)
+                        {
+                            var sm:SocketModel=new SocketModel();
+                            sm.method="RecieveServicio";
+                            var param:SocketParameter= {key:"servicio", value:JSON.stringify(servicio)};
+                            sm.parameters=[param];
+                            var socket:ws = item.socket;
+                            if(socket.OPEN)
+                                item.socket.send(JSON.stringify(sm));
+                        }
+                    });
+                    SocketB.ProcessNearOperators(newServ);
             }
             else
             {
                 response.Message="No se pudo crear el servicio";
                 response.Type=TypeResponse.Error;
                 response.Value=null;
+                res.send(response);
             }
-            res.send(response);
+            
         }
         else
         {
@@ -697,14 +733,14 @@ app.post('/CrearElementoRegistro',async(req, res)=>{
     }
 });
 
-app.post('/GetServiciosByCamion', async(req,res)=>{
+app.post('/GetServiciosByUsuario', async(req,res)=>{
     var response:Response=new Response();
     try{            
         var serializer = new TypedJSON(GenericRequest);
         var genReq=serializer.parse(req.body);
         if(genReq!=null)
         {
-            var servicios=await ServicioB.GetServiciosByCamion(genReq.Id, genReq.estado);
+            var servicios=await ServicioB.GetServiciosByUsuario(genReq.Id, genReq.estado);
             if(servicios!=null)
             {
                 response.Message="";
@@ -737,14 +773,14 @@ app.post('/GetServiciosByCamion', async(req,res)=>{
     }
 });
 
-app.post('/GetServiciosByCamionActivos', async(req,res)=>{
+app.post('/GetServiciosByUsuarioActivos', async(req,res)=>{
     var response:Response=new Response();
     try{            
         var serializer = new TypedJSON(GenericRequest);
         var genReq=serializer.parse(req.body);
         if(genReq!=null)
         {
-            var servicios=await ServicioB.GetServiciosByCamionActivos(genReq.Id);
+            var servicios=await ServicioB.GetServiciosByUsuarioActivos(genReq.Id);
             if(servicios!=null)
             {
                 response.Message="";
@@ -857,13 +893,13 @@ app.post('/GetServicio', async(req,res)=>{
     }
 });
 
-app.post('/loginCamion', (req, res)=>{
+/*app.post('/loginUsuario', (req, res)=>{
     var response:Response=new Response();
     var serializer = new TypedJSON(LoginRequest);
     var logReq=serializer.parse(req.body);
     if(logReq!=null)
     {
-        var userLogged = CamionB.Login(logReq.username.trim(),logReq.password.trim());
+        var userLogged = UsuarioB.Login(logReq.username.trim(),logReq.password.trim());
         userLogged.then((result)=> {
             if(result!=null)
             {
@@ -888,21 +924,21 @@ app.post('/loginCamion', (req, res)=>{
         res.send(response);
     }
     
-});
+});*/
 
-app.post('/GetCamion', async(req,res)=>{
+app.post('/GetUsuario', async(req,res)=>{
     var response:Response=new Response();
     try{            
         var serializer = new TypedJSON(GenericRequest);
         var genReq=serializer.parse(req.body);
         if(genReq!=null)
         {
-            var camion=await CamionB.GetCamionById(genReq.Id);
-            if(camion!=null)
+            var Vehiculo=await VehiculoB.GetVehiculoById(genReq.Id);
+            if(Vehiculo!=null)
             {
                 response.Message="";
                 response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(camion);
+                response.Value=JSON.stringify(Vehiculo);
             }
             else
             {
@@ -930,14 +966,14 @@ app.post('/GetCamion', async(req,res)=>{
     }
 });
 
-app.post('/GetCamionesByPos', async(req,res)=>{
+app.post('/GetVehiculosByPos', async(req,res)=>{
     var response:Response=new Response();
     try{            
-        var serializer = new TypedJSON(CamionPosRequest);
+        var serializer = new TypedJSON(UsuarioPosRequest);
         var genReq=serializer.parse(req.body);
         if(genReq!=null)
         {
-            var servicio=await CamionB.GetNearOperators(genReq.Lat,genReq.Lon,genReq.IdTipoCamion);
+            var servicio=await VehiculoB.GetNearOperators(genReq.Lat,genReq.Lon,genReq.IdTipoVehiculo);
             if(servicio!=null)
             {
                 response.Message="";
@@ -970,15 +1006,15 @@ app.post('/GetCamionesByPos', async(req,res)=>{
     }
 });
 
-app.post('/UpdateCamionPos', async(req, res)=>{
+app.post('/UpdateUsuarioPos', async(req, res)=>{
     var response:Response=new Response();
     try
     {
-        var serializer = new TypedJSON(CamionPosRequest);
+        var serializer = new TypedJSON(UsuarioPosRequest);
         var genReq=serializer.parse(req.body);
         if(genReq!=null)
         {
-            CamionB.UpdatePos(genReq.IdCamion,genReq.Lat,genReq.Lon);
+            UsuarioB.UpdatePos(genReq.IdUsuario,genReq.Lat,genReq.Lon);
             response.Message="";
             response.Type=TypeResponse.Ok;
             response.Value=null;
@@ -1031,6 +1067,26 @@ app.post('/GetParametros',async(req, res)=>{
 
 });
 
+app.post('/SendSocketPedido', async(req, res)=>{
+    var servicio = await ServicioB.GetServicio(1032);
+    SocketB.removeAllListeners();
+    SocketB.on('SendServicio', (idUser, servicio)=>{
+        var myglobal:any = global;
+        var item=myglobal.sockets.find(m=>m.idUsuario==idUser);
+        if(item)
+        {
+            var sm:SocketModel=new SocketModel();
+            sm.method="RecieveServicio";
+            var param:SocketParameter= {key:"servicio", value:JSON.stringify(servicio)};
+            sm.parameters=[param];
+            var socket:ws = item.socket;
+            if(socket.OPEN)
+                item.socket.send(JSON.stringify(sm));
+        }
+    });
+    SocketB.ProcessNearOperators(servicio);
+    res.send("enviado!");
+});
 
 app.listen(port, () => {
     console.log('Ready on port '+port+'!');

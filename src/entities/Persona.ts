@@ -3,18 +3,17 @@ import {
   Entity,
   Index,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { TipoDocumento } from "./TipoDocumento";
-import { TipoTripulante } from "./TipoTripulante";
-import { Camion } from "./Camion";
+import { TripulanteVehiculo } from "./TripulanteVehiculo";
+import { Usuario } from "./Usuario";
 
 @Index("PK_Tripulante", ["id"], { unique: true })
-@Entity("Tripulante", { schema: "dbo" })
-export class Tripulante {
+@Entity("Persona", { schema: "dbo" })
+export class Persona {
   @PrimaryGeneratedColumn({ type: "int", name: "Id" })
   id: number;
 
@@ -36,23 +35,19 @@ export class Tripulante {
   @Column("bit", { name: "Estado", default: () => "(0)" })
   estado: boolean;
 
-  @ManyToOne(() => TipoDocumento, (tipoDocumento) => tipoDocumento.tripulantes)
+  @Column("varchar", { name: "Email", length: 100 })
+  email: string;
+
+  @ManyToOne(() => TipoDocumento, (tipoDocumento) => tipoDocumento.personas)
   @JoinColumn([{ name: "IdTipoDocumento", referencedColumnName: "id" }])
   idTipoDocumento: TipoDocumento;
 
-  @ManyToOne(
-    () => TipoTripulante,
-    (tipoTripulante) => tipoTripulante.tripulantes
+  @OneToMany(
+    () => TripulanteVehiculo,
+    (tripulanteVehiculo) => tripulanteVehiculo.idTripulante2
   )
-  @JoinColumn([{ name: "IdTipoTripulante", referencedColumnName: "id" }])
-  idTipoTripulante: TipoTripulante;
+  tripulanteVehiculos: TripulanteVehiculo[];
 
-  @ManyToMany(() => Camion, (camion) => camion.tripulantes)
-  @JoinTable({
-    name: "TripulanteCamion",
-    joinColumns: [{ name: "IdTripulante", referencedColumnName: "id" }],
-    inverseJoinColumns: [{ name: "IdCamion", referencedColumnName: "id" }],
-    schema: "dbo",
-  })
-  camions: Camion[];
+  @OneToMany(() => Usuario, (usuario) => usuario.idPersona)
+  usuarios: Usuario[];
 }

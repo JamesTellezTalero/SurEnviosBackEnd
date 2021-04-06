@@ -34,10 +34,10 @@ export class ServicioModel
     idCiudadDestino: number;
 
     @jsonMember
-    idTipoCamion: number;
+    idTipoVehiculo: number;
 
     @jsonMember
-    idCamion?:number;
+    idUsuario?:number;
 
     @jsonMember
     latOrigen:number;
@@ -50,4 +50,7 @@ export class ServicioModel
     
     @jsonMember
     lonDest:number;
+
+    @jsonMember
+    idTipoServicio: number;
 }

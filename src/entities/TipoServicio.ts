@@ -5,11 +5,12 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Vehiculo } from "./Vehiculo";
+import { Servicio } from "./Servicio";
 
-@Index("PK_TipoVinulacion", ["id"], { unique: true })
-@Entity("TipoVinculacion", { schema: "dbo" })
-export class TipoVinculacion {
+@Index("TipoServicio_PK", ["id"], { unique: true })
+@Index("TipoServicio_UN", ["id"], { unique: true })
+@Entity("TipoServicio", { schema: "dbo" })
+export class TipoServicio {
   @PrimaryGeneratedColumn({ type: "int", name: "Id" })
   id: number;
 
@@ -19,6 +20,6 @@ export class TipoVinculacion {
   @Column("bit", { name: "Estado", default: () => "(1)" })
   estado: boolean;
 
-  @OneToMany(() => Vehiculo, (vehiculo) => vehiculo.idTipoVinculacion)
-  vehiculos: Vehiculo[];
+  @OneToMany(() => Servicio, (servicio) => servicio.idTipoServicio)
+  servicios: Servicio[];
 }

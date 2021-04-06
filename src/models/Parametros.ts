@@ -1,4 +1,4 @@
-import { CategoriaCamion } from "../entities/CategoriaCamion";
+import { CategoriaVehiculo } from "../entities/CategoriaVehiculo";
 import { Departamento } from "../entities/Departamento";
 import { EstadoServicio } from "../entities/EstadoServicio";
 import { Municipio } from "../entities/Municipio";
@@ -17,7 +17,7 @@ export class Parametros
 
     estadosServicio:EstadoServicio[];
 
-    categoriasCamion:CategoriaCamion[];
+    categoriasVehiculo:CategoriaVehiculo[];
 
     tiposDocumento:TipoDocumento[];
 

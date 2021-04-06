@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Cliente } from "./Cliente";
+import { Persona } from "./Persona";
 import { Propietario } from "./Propietario";
-import { Tripulante } from "./Tripulante";
 
 @Index("PK_TipoDocumento", ["id"], { unique: true })
 @Entity("TipoDocumento", { schema: "dbo" })
@@ -24,9 +24,9 @@ export class TipoDocumento {
   @OneToMany(() => Cliente, (cliente) => cliente.idTipoDocumento)
   clientes: Cliente[];
 
+  @OneToMany(() => Persona, (persona) => persona.idTipoDocumento)
+  personas: Persona[];
+
   @OneToMany(() => Propietario, (propietario) => propietario.idTipoDocumento)
   propietarios: Propietario[];
-
-  @OneToMany(() => Tripulante, (tripulante) => tripulante.idTipoDocumento)
-  tripulantes: Tripulante[];
 }

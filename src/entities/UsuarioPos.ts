@@ -1,11 +1,11 @@
 import { Column, Entity, Index, JoinColumn, OneToOne } from "typeorm";
-import { Camion } from "./Camion";
+import { Usuario } from "./Usuario";
 
-@Index("PK_CamionPos", ["idCamion"], { unique: true })
-@Entity("CamionPos", { schema: "dbo" })
-export class CamionPos {
-  @Column("int", { primary: true, name: "idCamion" })
-  idCamion: number;
+@Index("PK_CamionPos", ["idUsuario"], { unique: true })
+@Entity("UsuarioPos", { schema: "dbo" })
+export class UsuarioPos {
+  @Column("int", { primary: true, name: "IdUsuario" })
+  idUsuario: number;
 
   @Column("numeric", { name: "lat", precision: 18, scale: 4 })
   lat: number;
@@ -19,7 +19,7 @@ export class CamionPos {
   @Column("bit", { name: "enEntrega", default: () => "(0)" })
   enEntrega: boolean;
 
-  @OneToOne(() => Camion, (camion) => camion.camionPos)
-  @JoinColumn([{ name: "idCamion", referencedColumnName: "id" }])
-  idCamion2: Camion;
+  @OneToOne(() => Usuario, (usuario) => usuario.usuarioPos)
+  @JoinColumn([{ name: "IdUsuario", referencedColumnName: "id" }])
+  idUsuario2: Usuario;
 }

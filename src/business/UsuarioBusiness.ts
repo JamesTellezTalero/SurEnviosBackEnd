@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { getManager } from "typeorm";
 import { Usuario } from "../entities/Usuario";
+import { UsuarioPos } from "../entities/UsuarioPos";
 import { EmailBusiness } from "./EmailBusiness";
 
 export class UsuarioBusiness
@@ -8,16 +9,17 @@ export class UsuarioBusiness
     Login(Email:string, Clave:string):Promise<Usuario> {
         var data = getManager().getRepository(Usuario).findOne({ 
             where: {
-                email:Email,
+                userName:Email,
                 password:Clave
-            }
+            },
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona", "idPerfil"]
         });
         return data;
     }
 
     async CreatePerfil(newUser:Usuario):Promise<Usuario>
     {
-        var exist = await getManager().getRepository(Usuario).findOne({where : {email : newUser.email}});
+        var exist = await getManager().getRepository(Usuario).findOne({where : {email : newUser.userName}});
         if(exist!=null)
             return null;
         var data = getManager().getRepository(Usuario).save(newUser);
@@ -26,22 +28,21 @@ export class UsuarioBusiness
 
     GetPerfil(Id:number):Promise<Usuario> { 
         var data = getManager().getRepository(Usuario).findOne({
-            where:{Id:Id}
+            where:{id:Id}
         });
         return data;
     }
 
     async UpdatePerfil(perfil:Usuario):Promise<boolean>
     {
-        var currentUser = await getManager().getRepository(Usuario).findOne({where:{ Id:perfil.id }});
+        var currentUser = await getManager().getRepository(Usuario).findOne({where:{ Id:perfil.id },relations:["idPersona"]});
         if(currentUser!=null)
         {
+            currentUser.userName=perfil.userName==null?currentUser.userName:perfil.userName;
             currentUser.password=perfil.password==null?currentUser.password:perfil.password;
-            currentUser.email=perfil.email==null?currentUser.email:perfil.email;
+            currentUser.xueUserCode=perfil.xueUserCode==null?currentUser.xueUserCode:perfil.xueUserCode;
             currentUser.activo=perfil.activo==null?currentUser.activo:perfil.activo;
-            currentUser.nombres=perfil.nombres==null?currentUser.nombres:perfil.nombres;
-            currentUser.apellidos=perfil.apellidos==null?currentUser.apellidos:perfil.apellidos;
-            currentUser.telefono=perfil.telefono==null?currentUser.telefono:perfil.telefono;
+            currentUser.idPersona=perfil.idPersona==null?currentUser.idPersona:perfil.idPersona;
             getManager().getRepository(Usuario).save(perfil);
             return true;
         }
@@ -62,14 +63,14 @@ export class UsuarioBusiness
 
     async RecoverPassword(Email:string):Promise<boolean>
     {
-        var exist = await getManager().getRepository(Usuario).findOne({where : {email : Email}});
+        var exist = await getManager().getRepository(Usuario).findOne({where : {email : Email}, relations:["idPersona"]});
         if(exist)
         {
             var newPwd=this.MakePwd(10);
             exist.password=createHash('md5').update(newPwd).digest("hex");
             getManager().getRepository(Usuario).save(exist);
-            var message=""+exist.nombres+"\n\r A continuación le enviamos su nueva contraseña: \n\r"+newPwd;
-            new EmailBusiness().SendMail(exist.email,"Recuperación de contraseña",message);
+            var message=""+exist.idPersona.nombres+"\n\r A continuación le enviamos su nueva contraseña: \n\r"+newPwd;
+            new EmailBusiness().SendMail(exist.idPersona.email,"Recuperación de contraseña",message);
             return true;
         }
         else
@@ -86,5 +87,16 @@ export class UsuarioBusiness
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;
+    }
+
+    async UpdatePos(id:number, lat:number, lon:number)
+    {
+        var curPos=await getManager().getRepository(UsuarioPos).findOne({where:{idVehiculo:id}});
+        if(curPos!=null)
+        {
+            curPos.lat=lat;
+            curPos.lon=lon;
+            getManager().getRepository(UsuarioPos).save(curPos);
+        }
     }
 }

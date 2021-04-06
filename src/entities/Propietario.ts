@@ -7,9 +7,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Camion } from "./Camion";
 import { TipoDocumento } from "./TipoDocumento";
 import { Municipio } from "./Municipio";
+import { Vehiculo } from "./Vehiculo";
 
 @Index("PK_Propietario", ["id"], { unique: true })
 @Entity("Propietario", { schema: "dbo" })
@@ -35,9 +35,6 @@ export class Propietario {
   @Column("bit", { name: "Estado", default: () => "(0)" })
   estado: boolean;
 
-  @OneToMany(() => Camion, (camion) => camion.propietario)
-  camions: Camion[];
-
   @ManyToOne(() => TipoDocumento, (tipoDocumento) => tipoDocumento.propietarios)
   @JoinColumn([{ name: "IdTipoDocumento", referencedColumnName: "id" }])
   idTipoDocumento: TipoDocumento;
@@ -45,4 +42,7 @@ export class Propietario {
   @ManyToOne(() => Municipio, (municipio) => municipio.propietarios)
   @JoinColumn([{ name: "IdCiudad", referencedColumnName: "id" }])
   idCiudad: Municipio;
+
+  @OneToMany(() => Vehiculo, (vehiculo) => vehiculo.propietario)
+  vehiculos: Vehiculo[];
 }

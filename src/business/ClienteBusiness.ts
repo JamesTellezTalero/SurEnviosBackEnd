@@ -67,7 +67,7 @@ export class ClienteBusiness{
     async GetPerfilServicios(IdUsuario:number):Promise<Servicio[]> {
         var data = await getManager().getRepository(Servicio).find({ 
             where: { idCliente : IdUsuario }, 
-            relations:["idTipoCamion","idCliente", "idCiudadOrigen","idCiudadDestino", "estadoServicio","pagos","registroServicios", "registroServicios.idEstadoServicio"] 
+            relations:["idTipoVehiculo","idCliente", "idCiudadOrigen","idCiudadDestino", "estadoServicio","pagos","registroServicios", "registroServicios.idEstadoServicio"] 
         });
         return data;
     }

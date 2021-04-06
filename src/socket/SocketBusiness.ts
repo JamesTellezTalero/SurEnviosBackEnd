@@ -2,23 +2,23 @@ import { Socket } from "net";
 import * as ws from 'ws';
 import { TypedJSON } from "typedjson";
 import { getManager, getRepository, Not } from "typeorm";
-import { ParametersBusiness } from "../Business/ParametersBusiness";
-import { UtilBusiness } from "../Business/UtilsBusiness";
-import { DomiciliarioPos } from "../entity/DomiciliarioPos";
-import { Parametros } from "../entity/Parametros";
-import { Pedido } from "../entity/Pedido";
+//import { ParametersBusiness } from "../Business/ParametersBusiness";
+//import { UtilBusiness } from "../Business/UtilsBusiness";
+import { UsuarioPos } from "../entities/UsuarioPos";
+import { Parametros } from "../entities/Parametros";
+import { Servicio } from "../entities/Servicio";
 import { SocketModel, SocketParameter } from "../models/SocketModel";
-import { TokenRequest } from "../models/TokenRequest";
+//import { TokenRequest } from "../models/TokenRequest";
 import { EventEmitter } from "events";
-import { EstadoPedido } from "../entity/EstadoPedido";
-import { Domiciliario } from "../entity/Domiciliario";
+import { EstadoServicio } from "../entities/EstadoServicio";
+import { Usuario } from "../entities/Usuario";
 import { TypeResponse } from "../models/Response";
 import { NotificationPushBusiness } from "../Business/NotificationPushBusiness";
-import { DomiciliarioRequest } from "../entity/DomiciliarioRequest";
+import { UsuarioRequest } from "../entities/UsuarioRequest";
 
 export class SocketBusiness extends EventEmitter
 {
-    UtilsB=new UtilBusiness();
+    //UtilsB=new UtilBusiness();
     PushB=new NotificationPushBusiness();
 
     DeserializeMessage(message:string):SocketModel
@@ -53,38 +53,38 @@ export class SocketBusiness extends EventEmitter
         }
     }
 
-    async ProcessNearOperators(pedido:Pedido)
+    async ProcessNearOperators(Servicio:Servicio)
     {
-        var operators = await this.GetNearOperators(pedido.geolat, pedido.geolon);
+        var operators = await this.GetNearOperators(Servicio.latOrigen, Servicio.lonOrigen);
         console.log("Operadores: "+operators.length);
         //se realizan por separado el guardado en db del request al envío debido a que si hay demora con la conexión de la db no afecte el tiempo de envío al domiciliaro del request.
         operators.forEach(async item=>{
-            var domReq:DomiciliarioRequest= await getManager().getRepository(DomiciliarioRequest).findOne({where:{idDomiciliario:item.idUsuario,idPedido:pedido.id}});
+            var domReq:UsuarioRequest= await getManager().getRepository(UsuarioRequest).findOne({where:{idUsuario:item.idUsuario,idServicio:Servicio.id}});
             if(domReq!=null)
             {
                 domReq.respuesta=1;
             }
             else
             {
-                domReq=new DomiciliarioRequest();
-                domReq.idDomiciliario=item.idUsuario;
-                domReq.idPedido=pedido.id;
+                domReq=new UsuarioRequest();
+                domReq.idUsuario=item.idUsuario;
+                domReq.idServicio=Servicio.id;
                 domReq.respuesta=1;
             }
-            getManager().getRepository(DomiciliarioRequest).save(domReq);
+            getManager().getRepository(UsuarioRequest).save(domReq);
         });
         operators.forEach(item => {
-            this.emit('SendPedido', item.idUsuario, pedido);
+            this.emit('SendServicio', item.idUsuario, Servicio);
         });
     }
     
 
-    async GetNearOperators(lat:number,lon:number):Promise<DomiciliarioPos[]>
+    async GetNearOperators(lat:number,lon:number):Promise<UsuarioPos[]>
     {
         //console.log(lat+","+lon);
         var distancia = await getManager().getRepository(Parametros).findOne({where:{parametro:"radioBusqueda"}});
         var valueDistancia = parseInt(distancia.value);
-        var domics = await getManager().getRepository(DomiciliarioPos)
+        var users = await getManager().getRepository(UsuarioPos)
         .createQueryBuilder("Dom")
         .addSelect("(6371 * acos(cos(radians(:Lat)) * cos(radians(lat)) * cos(radians(lon) " +
         "- radians(:Long)) + sin(radians(:Lat)) * sin(radians(lat))))*1000","distancia")
@@ -93,15 +93,15 @@ export class SocketBusiness extends EventEmitter
         .andWhere("(6371 * acos(cos(radians(:Lat)) * cos(radians(lat)) * cos(radians(lon) " +
         "- radians(:Long)) + sin(radians(:Lat)) * sin(radians(lat))))*1000  < :distancia",{ Lat:lat, Long:lon,distancia:valueDistancia})
         .getMany();
-        return domics;
+        return users;
     }
 
     async ProcessRegisterOperator(request:SocketModel)
     {
         var idUsuario=parseFloat(request.GetParameter("idUsuario").value);
-        var user=await getManager().getRepository(DomiciliarioPos).findOne({where:{idUsuario:idUsuario}});
+        var user=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:idUsuario}});
         user.activo=true;
-        getManager().getRepository(DomiciliarioPos).save(user);
+        getManager().getRepository(UsuarioPos).save(user);
         this.emit('AddOperatorSocket', request, idUsuario);
     }
 
@@ -110,11 +110,11 @@ export class SocketBusiness extends EventEmitter
         var lat=parseFloat(request.GetParameter("lat").value);
         var lon=parseFloat(request.GetParameter("lon").value);
         var idUsuario=parseFloat(request.GetParameter("idUsuario").value);
-        var userPos:DomiciliarioPos = new DomiciliarioPos();
+        var userPos:UsuarioPos = new UsuarioPos();
         userPos.idUsuario=idUsuario;
         userPos.lat=lat;
         userPos.lon=lon;
-        getManager().getRepository(DomiciliarioPos).save(userPos);
+        getManager().getRepository(UsuarioPos).save(userPos);
     }
 
     async TakeService(request:SocketModel)
@@ -124,39 +124,39 @@ export class SocketBusiness extends EventEmitter
         sm.method="TakeService";
         var response;
         var sendResponse=false;
-        var idPedido=parseInt(request.GetParameter("idPedido").value);
-        var idDomiciliario=parseInt(request.GetParameter("idDomiciliario").value);
-        var aceptado=await getManager().getRepository(EstadoPedido).findOne({where:{nombre:"Aceptado"}});
-        var domiciliario=await getManager().getRepository(Domiciliario).findOne({where:{id:idDomiciliario}});
-        var domiciliarioPos=await getManager().getRepository(DomiciliarioPos).findOne({where:{idUsuario:idDomiciliario}});
-        var pedido= await getManager().getRepository(Pedido).findOne({where:{id:idPedido}, relations:["idEstadoPedido","idCliente"]});
-        console.log("validando pedido en estado solicitado y domiciliario nulo");
-        if(pedido.idEstadoPedido.nombre=="Solicitado" && pedido.idDomiciliario==null)
+        var idServicio=parseInt(request.GetParameter("idServicio").value);
+        var idUsuario=parseInt(request.GetParameter("idUsuario").value);
+        var aceptado=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Aceptado"}});
+        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}, relations:["idPersona"]});
+        var usuarioPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:idUsuario}});
+        var servicio= await getManager().getRepository(Servicio).findOne({where:{id:idServicio}, relations:["estadoServicio","idCliente"]});
+        console.log("validando Servicio en estado solicitado y domiciliario nulo");
+        if(servicio.estadoServicio.nombre=="Solicitado" && servicio.idUsuario==null)
         {
             console.log("in if");
-            pedido.idEstadoPedido=aceptado;
-            pedido.idDomiciliario=domiciliario;
-            pedido= await getManager().getRepository(Pedido).save(pedido);
-            domiciliarioPos.enEntrega=true;
-            getManager().getRepository(DomiciliarioPos).save(domiciliarioPos);
-            var domReq = await getManager().getRepository(DomiciliarioRequest).findOne({where:{idDomiciliario:domiciliario.id, idPedido:idPedido}});
+            servicio.estadoServicio=aceptado;
+            servicio.idUsuario=usuario;
+            servicio= await getManager().getRepository(Servicio).save(servicio);
+            usuarioPos.enEntrega=true;
+            getManager().getRepository(UsuarioPos).save(usuarioPos);
+            var domReq = await getManager().getRepository(UsuarioRequest).findOne({where:{idUsuario:usuario.id, idServicio:idServicio}});
             domReq.respuesta=2;
-            domReq = await getManager().getRepository(DomiciliarioRequest).save(domReq);
-            response={ idPedido:idPedido, asignado:true, mensaje:"El pedido ha sido asignado. Por favor diríjase al establecimiento."};
-            var subTitle:string = "Tu pedido ha sido aceptado";
-            var messageText:string = "Tu pedido será atendido por "+domiciliario.nombre+ ". Dentro de poco estará llegando a tu dirección con tu solicitud.";
-            this.PushB.Notificar(pedido.idCliente.id, pedido.id, subTitle,messageText, "take");
+            domReq = await getManager().getRepository(UsuarioRequest).save(domReq);
+            response={ idServicio:idServicio, asignado:true, mensaje:"El Servicio ha sido asignado. Por favor diríjase al sitio de recogida."};
+            var subTitle:string = "Tu Servicio ha sido aceptado";
+            var messageText:string = "Tu Servicio será atendido por "+ usuario.idPersona.nombres + ". Dentro de poco estará llegando a tu dirección con tu solicitud.";
+            this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "take");
             sm.type=TypeResponse.Ok;
             sendResponse=true;
         }
         else
         {
             console.log("in else");
-            response={idPedido:idPedido, asignado:false, mensaje:"El pedido ya ha sido tomado por otro domiciliario."};
+            response={idServicio:idServicio, asignado:false, mensaje:"El Servicio ya ha sido tomado por otro domiciliario."};
             sm.type=TypeResponse.Error;
         }
         console.log("sending notify a otros domiciliarios");
-        this.emit("NotifyPedidoTaken",idPedido);
+        this.emit("NotifyPedidoTaken",idServicio);
         var param:SocketParameter={key:"response", value:JSON.stringify(response)};
         sm.parameters=[param];
         if(sendResponse)
@@ -173,17 +173,17 @@ export class SocketBusiness extends EventEmitter
         var response;
         var idPedido=parseInt(request.GetParameter("idPedido").value);
         var idDomiciliario=parseInt(request.GetParameter("idDomiciliario").value);
-        var enProceso=await getManager().getRepository(EstadoPedido).findOne({where:{nombre:"En proceso"}});
-        var domiciliario=await getManager().getRepository(Domiciliario).findOne({where:{id:idDomiciliario}});
-        var pedido= await getManager().getRepository(Pedido).findOne({where:{id:idPedido}, relations:["idEstadoPedido","idCliente", "idDomiciliario"]});
-        if(pedido.idEstadoPedido.nombre=="Aceptado" && pedido.idDomiciliario.id==domiciliario.id)
+        var enProceso=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"En proceso"}});
+        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idDomiciliario}, relations:["idPersona"]});
+        var Servicio= await getManager().getRepository(Servicio).findOne({where:{id:idPedido}, relations:["idEstadoPedido","idCliente", "idDomiciliario"]});
+        if(Servicio.idEstadoPedido.nombre=="Aceptado" && Servicio.idDomiciliario.id==usuario.id)
         {
-            pedido.idEstadoPedido=enProceso;
-            pedido= await getManager().getRepository(Pedido).save(pedido);
+            Servicio.idEstadoPedido=enProceso;
+            Servicio= await getManager().getRepository(Servicio).save(Servicio);
             response={ idPedido:idPedido, asignado:true, mensaje:"Por favor diríjase al sitio de entrega."};
-            var subTitle:string = "Tu pedido va en camino";
-            var messageText:string = "Tu pedido va en camino llevado por "+domiciliario.nombre+ ". Dentro de poco estará llegando a tu dirección con tu solicitud.";
-            this.PushB.Notificar(pedido.idCliente.id, pedido.id, subTitle,messageText,"pickup");
+            var subTitle:string = "Tu Servicio va en camino";
+            var messageText:string = "Tu Servicio va en camino llevado por "+usuario.idPersona.nombres+ ". Dentro de poco estará llegando a tu dirección con tu solicitud.";
+            this.PushB.Notificar(Servicio.idCliente.id, Servicio.id, subTitle,messageText,"pickup");
             sm.type=TypeResponse.Ok;
         }
         else
@@ -203,21 +203,21 @@ export class SocketBusiness extends EventEmitter
         var response;
         var idPedido=parseInt(request.GetParameter("idPedido").value);
         var idDomiciliario=parseInt(request.GetParameter("idDomiciliario").value);
-        var entregado=await getManager().getRepository(EstadoPedido).findOne({where:{nombre:"Entregado"}});
-        var domiciliario=await getManager().getRepository(Domiciliario).findOne({where:{id:idDomiciliario}});
-        var domiciliarioPos=await getManager().getRepository(DomiciliarioPos).findOne({where:{idUsuario:idDomiciliario}});
-        var pedido= await getManager().getRepository(Pedido).findOne({where:{id:idPedido}, relations:["idEstadoPedido","idCliente", "idDomiciliario"]});
-        if(pedido.idEstadoPedido.nombre=="En proceso" && pedido.idDomiciliario.id==domiciliario.id)
+        var entregado=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Entregado"}});
+        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idDomiciliario}});
+        var UsuarioPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:idDomiciliario}});
+        var Servicio= await getManager().getRepository(Servicio).findOne({where:{id:idPedido}, relations:["idEstadoPedido","idCliente", "idDomiciliario"]});
+        if(Servicio.idEstadoPedido.nombre=="En proceso" && Servicio.idDomiciliario.id==usuario.id)
         {
-            pedido.idEstadoPedido=entregado;
-            pedido.fechaEntrega=new Date();
-            pedido= await getManager().getRepository(Pedido).save(pedido);
-            domiciliarioPos.enEntrega=false;
-            getManager().getRepository(DomiciliarioPos).save(domiciliarioPos);
+            Servicio.idEstadoPedido=entregado;
+            Servicio.fechaEntrega=new Date();
+            Servicio= await getManager().getRepository(Servicio).save(Servicio);
+            UsuarioPos.enEntrega=false;
+            getManager().getRepository(UsuarioPos).save(UsuarioPos);
             response={ idPedido:idPedido, asignado:true, mensaje:"El servicio ha finalizado correctamente."};
-            var subTitle:string = "Tu pedido ha sido entregado";
-            var messageText:string = "Tu pedido ha sido entregado. Gracias por utilizar los servicios de SEApp.";
-            this.PushB.Notificar(pedido.idCliente.id, pedido.id, subTitle,messageText,"deliver");
+            var subTitle:string = "Tu Servicio ha sido entregado";
+            var messageText:string = "Tu Servicio ha sido entregado. Gracias por utilizar los servicios de SEApp.";
+            this.PushB.Notificar(Servicio.idCliente.id, Servicio.id, subTitle,messageText,"deliver");
             sm.type=TypeResponse.Ok;
         }
         else
@@ -237,9 +237,9 @@ export class SocketBusiness extends EventEmitter
         var response;
         var idPedido=parseInt(request.GetParameter("idPedido").value);
         var idDomiciliario=parseInt(request.GetParameter("idDomiciliario").value);
-        var domReq=await getManager().getRepository(DomiciliarioRequest).findOne({where:{idDomiciliario:idDomiciliario, idPedido:idPedido}});
+        var domReq=await getManager().getRepository(UsuarioRequest).findOne({where:{idDomiciliario:idDomiciliario, idPedido:idPedido}});
         domReq.respuesta=3;
-        await getManager().getRepository(DomiciliarioRequest).save(domReq);
+        await getManager().getRepository(UsuarioRequest).save(domReq);
         response={ idPedido:idPedido, asignado:false, mensaje:"Haz rechazado la solicitud."};
         sm.type=TypeResponse.Ok;        
         var param:SocketParameter={key:"response", value:JSON.stringify(response)};
@@ -247,21 +247,21 @@ export class SocketBusiness extends EventEmitter
         this.emit("ReplyRequest",sm);
     }
 
-    async CancelService(pedido:Pedido)
+    async CancelService(Servicio:Servicio)
     {
-        this.emit("CancelService",pedido.id);
+        this.emit("CancelService",Servicio.id);
     }
 
     async SendCancelService(idPedido:number)
     {
-        var domReqs=await getManager().getRepository(DomiciliarioRequest).find({where:{idPedido:idPedido, respuesta:Not(2)}});
+        var domReqs=await getManager().getRepository(UsuarioRequest).find({where:{idServicio:idPedido, respuesta:Not(2)}});
         domReqs.forEach(async element => {
             if(element.respuesta==1)
             {
                 element.respuesta=4;
-                var domReq = await getManager().getRepository(DomiciliarioRequest).save(element);
+                var domReq = await getManager().getRepository(UsuarioRequest).save(element);
                 var myglobal:any = global;                
-                var item=myglobal.sockets.find(m=>m.idUsuario==element.idDomiciliario);
+                var item=myglobal.sockets.find(m=>m.idUsuario==element.idUsuario);
                 if(item)
                 {
                     var sm:SocketModel=new SocketModel();

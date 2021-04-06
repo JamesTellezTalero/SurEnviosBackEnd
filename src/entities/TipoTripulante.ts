@@ -5,7 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Tripulante } from "./Tripulante";
+import { TripulanteVehiculo } from "./TripulanteVehiculo";
 
 @Index("PK_TipoTripulante", ["id"], { unique: true })
 @Entity("TipoTripulante", { schema: "dbo" })
@@ -19,6 +19,9 @@ export class TipoTripulante {
   @Column("bit", { name: "Estado", default: () => "(1)" })
   estado: boolean;
 
-  @OneToMany(() => Tripulante, (tripulante) => tripulante.idTipoTripulante)
-  tripulantes: Tripulante[];
+  @OneToMany(
+    () => TripulanteVehiculo,
+    (tripulanteCamion) => tripulanteCamion.idTipoTripulante
+  )
+  tripulanteVehiculos: TripulanteVehiculo[];
 }
