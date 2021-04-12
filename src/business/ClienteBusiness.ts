@@ -43,7 +43,7 @@ export class ClienteBusiness{
 
     async UpdatePerfil(perfil:Cliente):Promise<boolean>
     {
-        var currentUser = await getManager().getRepository(Cliente).findOne({where:{ Id:perfil.id }});
+        var currentUser = await getManager().getRepository(Cliente).findOne({where:{ id:perfil.id }});
         if(currentUser!=null)
         {
             currentUser.password=perfil.password==null?currentUser.password:perfil.password;

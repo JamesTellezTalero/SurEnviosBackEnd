@@ -2,13 +2,14 @@ import * as https from 'https';
 import { getManager } from "typeorm";
 import { Usuario } from '../entities/Usuario';
 import { PushNotificationData } from "../entities/PushNotificationData";
+import { Cliente } from '../entities/Cliente';
 
 export class NotificationPushBusiness
 {
     sendNotification(data) {
         var headers = {
             "Content-Type": "application/json; charset=utf-8",
-            "Authorization": "Basic YTczMDM0ZjAtM2FjZi00MGU0LWE2MGEtNzBjNzZkMWFmMDI1"
+            "Authorization": "Basic NWRmMmE5YjktN2E3NS00MTRjLWFhYjAtMGM1Mjk1MjBiYzUz"
         };
         
         var options = {
@@ -37,11 +38,11 @@ export class NotificationPushBusiness
         req.end();
     }      
 
-    async Notificar(userId:number, idPedido:number, subTitle:string, messageText:string, status:string)
+    async Notificar(userId:number, idServicio:number, subTitle:string, messageText:string, status:string)
     {
-        var pushData:PushNotificationData = await getManager().getRepository(PushNotificationData).findOne({where:{idUser:userId}});
+        var pushData:Cliente = await getManager().getRepository(Cliente).findOne({where:{id:userId}});
         var message = { 
-            app_id: "976c3ce5-03da-44d5-bac2-2edf890a5b4f",
+            app_id: "8153d12e-ee2a-4c92-ad57-cf6dd135c252",
             headers:{
                 "es" : "SEApp", 
                 "en":"SEApp"
@@ -55,10 +56,10 @@ export class NotificationPushBusiness
                 "en" : messageText
             },
             data:{
-                "idPedido":idPedido,
+                "idServicio":idServicio,
                 "status":status
             },
-            include_player_ids: [pushData.pushId]
+            include_player_ids: [pushData.playerId]
         };
         this.sendNotification(message)
     }

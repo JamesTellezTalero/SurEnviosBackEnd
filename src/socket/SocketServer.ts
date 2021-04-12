@@ -19,13 +19,13 @@ export class SocketServer
     {
         var myglobal:any=global;
         myglobal.sockets=[];
+        myglobal.clientSockets=[];
         this.SocketB=new SocketBusiness();
         var webSocketServer = ws.Server;
         var webSocketServerObject = new webSocketServer({ port: 9020 });
         webSocketServerObject.on('connection', function (ws, req) {
             var userID = parseInt(req.url.substr(1), 10);
             var ipAddress=req.socket.remoteAddress;
-            console.log("Connected from "+ req.socket.remoteAddress);
             ws.on('message', function (message) {
                 SocketServer.ProcessRequest(message, ws, ipAddress);
             });
@@ -37,7 +37,7 @@ export class SocketServer
 
             ws.on('close', function (c, d) {
                 SocketServer.RemoveSocket(ws, ipAddress);
-                console.log('Disconnect ' + c + ' -- ' + ipAddress);
+            
             });
         });
     }
@@ -69,6 +69,32 @@ export class SocketServer
             res.type=TypeResponse.Ok;
             item.socket.send(JSON.stringify(res));
             SocketB.removeAllListeners();
+            console.log("Connected Operator from "+ ipAddress);
+        });
+
+        SocketB.on('AddClientSocket',(request, idCliente)=>{
+            var myglobal:any=global;
+            var item =myglobal.clientSockets.find(m=>m.idUsuario=idCliente);
+            if(item)
+            {
+                item.ipAdress=ipAddress;
+                item.clientSockets=ws;
+            }
+            else
+            {
+                var userSocket:UserSocket=new UserSocket();
+                userSocket.idUsuario=idCliente;
+                userSocket.ipAddress=ipAddress;
+                userSocket.socket=ws;
+                myglobal.clientSockets.push(userSocket);
+                item=myglobal.clientSockets.find(m=>m.idUsuario==idCliente);
+            }
+            var res:SocketModel=new SocketModel();
+            res.method=req.method;
+            res.type=TypeResponse.Ok;
+            item.socket.send(JSON.stringify(res));
+            SocketB.removeAllListeners();
+            console.log("Connected Client from "+ ipAddress);
         });
 
         SocketB.on('ReplyRequest',(response)=>{
@@ -95,6 +121,16 @@ export class SocketServer
                 user.activo=false;
                 getManager().getRepository(UsuarioPos).save(user);
                 myglobal.sockets.splice(i,1);
+                console.log('Disconnect Operator from ' + ipAddress);
+            }
+        }
+
+        for(var i=0;i<myglobal.clientSockets.length;i++)
+        {
+            if(myglobal.clientSockets[i].ipAddress==ipAddress)
+            {
+                myglobal.clientSockets.splice(i,1);
+                console.log('Disconnect Client from ' + ipAddress);
             }
         }
     }

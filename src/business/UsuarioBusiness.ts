@@ -28,7 +28,8 @@ export class UsuarioBusiness
 
     GetPerfil(Id:number):Promise<Usuario> { 
         var data = getManager().getRepository(Usuario).findOne({
-            where:{id:Id}
+            where:{id:Id},
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona", "idPerfil"]
         });
         return data;
     }
@@ -91,12 +92,21 @@ export class UsuarioBusiness
 
     async UpdatePos(id:number, lat:number, lon:number)
     {
-        var curPos=await getManager().getRepository(UsuarioPos).findOne({where:{idVehiculo:id}});
-        if(curPos!=null)
+        var curPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:id}});
+        if(curPos==null)
         {
-            curPos.lat=lat;
-            curPos.lon=lon;
-            getManager().getRepository(UsuarioPos).save(curPos);
+            curPos=new UsuarioPos();
+            curPos.idUsuario=id;
         }
+        curPos.lat=lat;
+        curPos.lon=lon;
+        getManager().getRepository(UsuarioPos).save(curPos);
+        
+    }
+
+    async GetUsuarioPos(id:number)
+    {
+        var curPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:id}});
+        return curPos;
     }
 }

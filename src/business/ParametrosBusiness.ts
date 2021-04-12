@@ -10,6 +10,7 @@ import { TipoVinculacion } from "../entities/TipoVinculacion";
 import { Parametros } from "../models/Parametros";
 import { Parametros as Params } from "../entities/Parametros";
 import { TipoElementoRegistro } from "../entities/TipoElementoRegistro";
+import { TipoServicio } from "../entities/TipoServicio";
 
 export class ParametrosBusiness
 {
@@ -25,6 +26,7 @@ export class ParametrosBusiness
         parametros.tiposTripulante=await getManager().getRepository(TipoTripulante).find();
         parametros.tiposPago=await getManager().getRepository(TipoPago).find();
         parametros.tiposElemento=await getManager().getRepository(TipoElementoRegistro).find();
+        parametros.tiposServicio=await getManager().getRepository(TipoServicio).find();
         parametros.parametros=await getManager().getRepository(Params).find();
         return parametros;
     }

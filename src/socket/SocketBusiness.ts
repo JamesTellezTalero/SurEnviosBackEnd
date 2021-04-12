@@ -2,8 +2,8 @@ import { Socket } from "net";
 import * as ws from 'ws';
 import { TypedJSON } from "typedjson";
 import { getManager, getRepository, Not } from "typeorm";
-//import { ParametersBusiness } from "../Business/ParametersBusiness";
-//import { UtilBusiness } from "../Business/UtilsBusiness";
+//import { ParametersBusiness } from "../business/ParametersBusiness";
+//import { UtilBusiness } from "../business/UtilsBusiness";
 import { UsuarioPos } from "../entities/UsuarioPos";
 import { Parametros } from "../entities/Parametros";
 import { Servicio } from "../entities/Servicio";
@@ -13,8 +13,12 @@ import { EventEmitter } from "events";
 import { EstadoServicio } from "../entities/EstadoServicio";
 import { Usuario } from "../entities/Usuario";
 import { TypeResponse } from "../models/Response";
-import { NotificationPushBusiness } from "../Business/NotificationPushBusiness";
+import { NotificationPushBusiness } from "../business/NotificationPushBusiness";
 import { UsuarioRequest } from "../entities/UsuarioRequest";
+import { Perfil } from "../entities/Perfil";
+import { TipoServicio } from "../entities/TipoServicio";
+import { Vehiculo } from "../entities/Vehiculo";
+import { TipoVehiculo } from "../entities/TipoVehiculo";
 
 export class SocketBusiness extends EventEmitter
 {
@@ -35,6 +39,9 @@ export class SocketBusiness extends EventEmitter
             case "RegisterOperator":
                 this.ProcessRegisterOperator(req);
                 break;
+            case "RegisterClient":
+                this.ProcessRegisterClient(req);
+                break;
             case "SendPos":
                 this.SetPos(req);
                 break;
@@ -53,9 +60,29 @@ export class SocketBusiness extends EventEmitter
         }
     }
 
+    async GetPerfilByTipoServicio(idTipoServicio:number)
+    {
+        var tipoServicio=await getManager().getRepository(TipoServicio).findOne({where:{id:idTipoServicio}});
+        switch(tipoServicio.nombre)
+        {
+            case "MENSAJERIA EXPRESA":
+                return await getManager().getRepository(Perfil).findOne({where:{nombre:"Mensajería"}});
+            case "PAQUETEO":
+                return await getManager().getRepository(Perfil).findOne({where:{nombre:"Paquetería"}});
+            case "Carga Dimensionada":
+                return await getManager().getRepository(Perfil).findOne({where:{nombre:"Carga Dimensionada"}});
+            case "Diligencias":
+                return await getManager().getRepository(Perfil).findOne({where:{nombre:"Diligencias"}});
+            case "Transporte Dedicado":
+                return await getManager().getRepository(Perfil).findOne({where:{nombre:"Transporte Dedicado"}});
+        }
+        return null;
+    }
+
     async ProcessNearOperators(Servicio:Servicio)
     {
-        var operators = await this.GetNearOperators(Servicio.latOrigen, Servicio.lonOrigen);
+        var perfil=await this.GetPerfilByTipoServicio(Servicio.idTipoServicio.id);
+        var operators = await this.GetNearOperators(Servicio.latOrigen, Servicio.lonOrigen, perfil.id, Servicio.idTipoVehiculo);
         console.log("Operadores: "+operators.length);
         //se realizan por separado el guardado en db del request al envío debido a que si hay demora con la conexión de la db no afecte el tiempo de envío al domiciliaro del request.
         operators.forEach(async item=>{
@@ -79,8 +106,9 @@ export class SocketBusiness extends EventEmitter
     }
     
 
-    async GetNearOperators(lat:number,lon:number):Promise<UsuarioPos[]>
+    async GetNearOperators(lat:number,lon:number, perfil:number, tipoVehiculo:TipoVehiculo):Promise<UsuarioPos[]>
     {
+        var idTipoVehiculo=tipoVehiculo!=null?tipoVehiculo.id:null;
         //console.log(lat+","+lon);
         var distancia = await getManager().getRepository(Parametros).findOne({where:{parametro:"radioBusqueda"}});
         var valueDistancia = parseInt(distancia.value);
@@ -88,8 +116,13 @@ export class SocketBusiness extends EventEmitter
         .createQueryBuilder("Dom")
         .addSelect("(6371 * acos(cos(radians(:Lat)) * cos(radians(lat)) * cos(radians(lon) " +
         "- radians(:Long)) + sin(radians(:Lat)) * sin(radians(lat))))*1000","distancia")
-        .where("activo=:status",{ status : 1 })
+        .innerJoin(Usuario,"u","Dom.idUsuario=u.id")
+        .leftJoin(Vehiculo,"v", "u.id=v.idUsuario")
+        .leftJoin(TipoVehiculo,"tv","v.idTipoVehiculo=tv.id")
+        .where("Dom.activo=:status",{ status : 1 })
         .andWhere("enEntrega=:busy",{ busy : 0 })
+        .andWhere("u.idPerfil=:perfil",{ perfil : perfil })
+        .andWhere("(v.idTipoVehiculo=:idTV or :idTV is null)",{ idTV : idTipoVehiculo })
         .andWhere("(6371 * acos(cos(radians(:Lat)) * cos(radians(lat)) * cos(radians(lon) " +
         "- radians(:Long)) + sin(radians(:Lat)) * sin(radians(lat))))*1000  < :distancia",{ Lat:lat, Long:lon,distancia:valueDistancia})
         .getMany();
@@ -103,6 +136,12 @@ export class SocketBusiness extends EventEmitter
         user.activo=true;
         getManager().getRepository(UsuarioPos).save(user);
         this.emit('AddOperatorSocket', request, idUsuario);
+    }
+
+    async ProcessRegisterClient(request:SocketModel)
+    {
+        var idCliente=parseFloat(request.GetParameter("idCliente").value);
+        this.emit('AddClientSocket', request, idCliente);
     }
 
     async SetPos(request:SocketModel)
@@ -143,8 +182,8 @@ export class SocketBusiness extends EventEmitter
             domReq.respuesta=2;
             domReq = await getManager().getRepository(UsuarioRequest).save(domReq);
             response={ idServicio:idServicio, asignado:true, mensaje:"El Servicio ha sido asignado. Por favor diríjase al sitio de recogida."};
-            var subTitle:string = "Tu Servicio ha sido aceptado";
-            var messageText:string = "Tu Servicio será atendido por "+ usuario.idPersona.nombres + ". Dentro de poco estará llegando a tu dirección con tu solicitud.";
+            var subTitle:string = "Tu Solicitud de servicio ha sido aceptado";
+            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " +usuario.idPersona.apellidos + ". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
             this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "take");
             sm.type=TypeResponse.Ok;
             sendResponse=true;
@@ -235,12 +274,12 @@ export class SocketBusiness extends EventEmitter
         var sm:SocketModel=new SocketModel();
         sm.method="RejectService";
         var response;
-        var idPedido=parseInt(request.GetParameter("idPedido").value);
-        var idDomiciliario=parseInt(request.GetParameter("idDomiciliario").value);
-        var domReq=await getManager().getRepository(UsuarioRequest).findOne({where:{idDomiciliario:idDomiciliario, idPedido:idPedido}});
+        var idServicio=parseInt(request.GetParameter("idServicio").value);
+        var idUsuario=parseInt(request.GetParameter("idUsuario").value);
+        var domReq=await getManager().getRepository(UsuarioRequest).findOne({where:{idUsuario:idUsuario, idServicio:idServicio}});
         domReq.respuesta=3;
         await getManager().getRepository(UsuarioRequest).save(domReq);
-        response={ idPedido:idPedido, asignado:false, mensaje:"Haz rechazado la solicitud."};
+        response={ idServicio:idServicio, asignado:false, mensaje:"Haz rechazado la solicitud."};
         sm.type=TypeResponse.Ok;        
         var param:SocketParameter={key:"response", value:JSON.stringify(response)};
         sm.parameters=[param];
@@ -274,5 +313,21 @@ export class SocketBusiness extends EventEmitter
                 }
             }
         });
+    }
+    
+    async SendNotification(message, idUsuario)
+    {
+        var myglobal:any = global;
+        var item=myglobal.clientSockets.find(m=>m.idUsuario==idUsuario);
+        if(item)
+        {
+            var sm:SocketModel=new SocketModel();
+            sm.method="NotifyService";
+            var param:SocketParameter={key:"message",value:JSON.stringify(message)};
+            sm.parameters=[param];
+            var socket:ws = item.socket;
+            if(socket.OPEN)
+                item.socket.send(JSON.stringify(sm));
+        }
     }
 }

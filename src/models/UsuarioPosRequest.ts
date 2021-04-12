@@ -4,7 +4,7 @@ import { jsonMember, jsonObject } from "typedjson";
 export class UsuarioPosRequest
 {
     @jsonMember
-    idUsuario:string;
+    id:string;
 
     @jsonMember
     lat:string;
@@ -17,7 +17,7 @@ export class UsuarioPosRequest
 
     get IdUsuario():number
     {
-        return parseInt(this.idUsuario);
+        return parseInt(this.id);
     }    
 
     get Lat():number{

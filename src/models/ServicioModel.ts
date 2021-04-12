@@ -1,4 +1,10 @@
 import { jsonMember, jsonObject } from "typedjson";
+import { Cliente } from "../entities/Cliente";
+import { EstadoServicio } from "../entities/EstadoServicio";
+import { Municipio } from "../entities/Municipio";
+import { TipoServicio } from "../entities/TipoServicio";
+import { TipoVehiculo } from "../entities/TipoVehiculo";
+import { Usuario } from "../entities/Usuario";
 
 @jsonObject
 export class ServicioModel
@@ -22,22 +28,22 @@ export class ServicioModel
     valor: number;
 
     @jsonMember
-    estadoServicio: number;
+    estadoServicio: EstadoServicio;
 
     @jsonMember
-    idCliente: number;
+    idCliente: Cliente;
 
     @jsonMember
-    idCiudadOrigen: number;
+    idCiudadOrigen: Municipio;
 
     @jsonMember
-    idCiudadDestino: number;
+    idCiudadDestino: Municipio;
 
     @jsonMember
-    idTipoVehiculo: number;
+    idTipoVehiculo: TipoVehiculo;
 
     @jsonMember
-    idUsuario?:number;
+    idUsuario?:Usuario;
 
     @jsonMember
     latOrigen:number;
@@ -52,5 +58,17 @@ export class ServicioModel
     lonDest:number;
 
     @jsonMember
-    idTipoServicio: number;
+    idTipoServicio: TipoServicio;
+
+    @jsonMember
+    peso: number;
+
+    @jsonMember
+    cantidad: number | null;
+
+    @jsonMember
+    programado: boolean;
+
+    @jsonMember
+    fechaProgramacion: Date | null;
 }

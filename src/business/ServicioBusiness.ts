@@ -14,37 +14,34 @@ import { ServicioModel } from "../models/ServicioModel";
 import { writeFile, writeFileSync  } from 'fs';
 import { Usuario } from "../entities/Usuario";
 import { TipoServicio } from "../entities/TipoServicio";
+import { NotificationPushBusiness } from "./NotificationPushBusiness";
+import { UsuarioPos } from "../entities/UsuarioPos";
 
 export class ServicioBusiness
 {
+    PushB=new NotificationPushBusiness();
     async CrearServicioCliente(servicio:ServicioModel):Promise<Servicio>
     {
         var newServicio:Servicio=new Servicio();
-        newServicio.idCliente=await getManager().getRepository(Cliente).findOne({where:{id:servicio.idCliente}});
-        var ciudadOrigen=await getManager().getRepository(Municipio).findOne(
-        {
-            where:{id:servicio.idCiudadOrigen},
-            relations:["idDepartamento"]
-        });
-        var ciudadDestino=await getManager().getRepository(Municipio).findOne(
-        {
-            where:{id:servicio.idCiudadDestino},
-            relations:["idDepartamento"]
-        });
+        newServicio.idCliente=servicio.idCliente;
         newServicio.descripcionCarga=servicio.descripcionCarga;
         newServicio.direccionOrigen=servicio.direccionOrigen;
         newServicio.direccionDestino=servicio.direccionDestino;
-        newServicio.idCiudadOrigen=ciudadOrigen;
-        newServicio.idCiudadDestino=ciudadDestino;
-        newServicio.estadoServicio=await getManager().getRepository(EstadoServicio).findOne({where:{id:servicio.estadoServicio}});
-        newServicio.idTipoVehiculo=await getManager().getRepository(TipoVehiculo).findOne({where:{id:servicio.idTipoVehiculo}});
+        newServicio.idCiudadOrigen=servicio.idCiudadOrigen;
+        newServicio.idCiudadDestino=servicio.idCiudadDestino;
+        newServicio.estadoServicio=servicio.estadoServicio;
+        newServicio.idTipoVehiculo=servicio.idTipoVehiculo;
         newServicio.valor=servicio.valor;
         newServicio.fechaSolicitud=new Date();
         newServicio.latOrigen=servicio.latOrigen;
         newServicio.lonOrigen=servicio.lonOrigen;
         newServicio.latDest=servicio.latDest;
         newServicio.lonDest=servicio.lonDest;
-        newServicio.idTipoServicio=await getManager().getRepository(TipoServicio).findOne({where:{id:servicio.idTipoServicio}});
+        newServicio.peso=servicio.peso;
+        newServicio.cantidad=servicio.cantidad;
+        newServicio.programado=servicio.programado;
+        newServicio.fechaProgramacion=servicio.fechaProgramacion;
+        newServicio.idTipoServicio=servicio.idTipoServicio;//await getManager().getRepository(TipoServicio).findOne({where:{id:servicio.idTipoServicio}});
         newServicio = await getManager().getRepository(Servicio).save(newServicio);
 
         var registroServicio:RegistroServicio=new RegistroServicio();
@@ -54,48 +51,50 @@ export class ServicioBusiness
         registroServicio.fechaRegistro=newServicio.fechaSolicitud;
         getManager().getRepository(RegistroServicio).save(registroServicio);
         
-        return getManager().getRepository(Servicio).findOne({where:{id:newServicio.id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago"]});
+        return getManager().getRepository(Servicio).findOne({where:{id:newServicio.id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago","registroServicios","idTipoVehiculo","idCliente", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos", "idTipoServicio"]});
     }
 
     async UpdateServicioCliente(servicio:ServicioModel):Promise<Servicio>
     {
-        var currentService:Servicio=await getManager().getRepository(Servicio).findOne({where:{id:servicio.id}});
-        currentService.idCliente=await getManager().getRepository(Cliente).findOne({where:{id:servicio.idCliente}});
-        var ciudadOrigen=await getManager().getRepository(Municipio).findOne(
-        {
-            where:{id:servicio.idCiudadOrigen},
-            relations:["idDepartamento"]
-        });
-        var ciudadDestino=await getManager().getRepository(Municipio).findOne(
-        {
-            where:{id:servicio.idCiudadDestino},
-            relations:["idDepartamento"]
-        });
+        var currentService:Servicio=await getManager().getRepository(Servicio).findOne({where:{id:servicio.id}, relations:["estadoServicio"]});
+        currentService.idCliente=servicio.idCliente;
+
         if(servicio.idUsuario!=null)
         {
-            var Usuario=await getManager().getRepository(Usuario).findOne({where:{id:servicio.idUsuario}});
-            if(Vehiculo!=null)
-            {
-                currentService.idUsuario=Usuario;
-            }
+            currentService.idUsuario=servicio.idUsuario;
         }
         currentService.descripcionCarga=servicio.descripcionCarga;
         currentService.direccionOrigen=servicio.direccionOrigen;
         currentService.direccionDestino=servicio.direccionDestino;
-        currentService.idCiudadOrigen=ciudadOrigen;
-        currentService.idCiudadDestino=ciudadDestino;
-        currentService.estadoServicio=await getManager().getRepository(EstadoServicio).findOne({where:{id:servicio.estadoServicio}});
-        currentService.idTipoVehiculo=await getManager().getRepository(TipoVehiculo).findOne({where:{id:servicio.idTipoVehiculo}});
+        currentService.idCiudadOrigen=servicio.idCiudadOrigen;
+        currentService.idCiudadDestino=servicio.idCiudadDestino;
+        switch(servicio.estadoServicio.nombre)
+        {
+            case "Cancelado":
+            case "No Procesado":
+                if(currentService.estadoServicio.nombre=="Aceptado")
+                {
+                    servicio.estadoServicio=currentService.estadoServicio;
+                    break;
+                }
+        }
+        currentService.estadoServicio=servicio.estadoServicio;
+        currentService.idTipoVehiculo=servicio.idTipoVehiculo;
         currentService.valor=servicio.valor;
         currentService.fechaSolicitud=new Date();
+        currentService.peso=servicio.peso;
+        currentService.cantidad=servicio.cantidad;
+        currentService.programado=servicio.programado;
+        currentService.fechaProgramacion=servicio.fechaProgramacion;
+        currentService.idTipoServicio=servicio.idTipoServicio;
         currentService = await getManager().getRepository(Servicio).save(currentService);        
-        return getManager().getRepository(Servicio).findOne({where:{id:currentService.id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago"]});
+        return getManager().getRepository(Servicio).findOne({where:{id:currentService.id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago","registroServicios","idTipoVehiculo","idCliente", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos", "idTipoServicio"]});
     }
 
     async AddRegistroServicio(registro:RegistroServicioModel)
     {
         var registroServicio:RegistroServicio = new RegistroServicio();
-        var servicio = await getManager().getRepository(Servicio).findOne({where:{id:registro.idServicio}});
+        var servicio = await getManager().getRepository(Servicio).findOne({where:{id:registro.idServicio}, relations:["idCliente","idUsuario", "idUsuario.idPersona"]});
         registroServicio.idServicio = servicio;
         registroServicio.idEstadoServicio = await getManager().getRepository(EstadoServicio).findOne({where:{id:registro.idEstadoServicio}});
         registroServicio.observacion = registro.observacion;
@@ -103,6 +102,27 @@ export class ServicioBusiness
         registroServicio = await getManager().getRepository(RegistroServicio).save(registroServicio);
         servicio.estadoServicio=registroServicio.idEstadoServicio;
         await getManager().getRepository(Servicio).save(servicio);
+        switch(servicio.estadoServicio.nombre)
+        {
+            case "Programado":
+                var subTitle:string = "Tu Solicitud está próxima a ser recogida";
+                var messageText:string = "Tu servicio será atendido por "+ servicio.idUsuario.idPersona.nombres + " " +servicio.idUsuario.idPersona.apellidos + ". En este momento se encuentra dirigiéndose al punto de recogida.";
+                this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "onroute");
+                break;
+            case "Recepcionado":
+                var subTitle:string = "Tu Servicio va en camino";
+                var messageText:string = "Tu Servicio va en camino llevado por "+servicio.idUsuario.idPersona.nombres+ " "+servicio.idUsuario.idPersona.apellidos+ ". Dentro de poco estará llegando a su destino.";
+                this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText,"pickup");
+                break;
+            case "Entregado":
+                var usuarioPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:servicio.idUsuario.id}});
+                usuarioPos.enEntrega=false;
+                getManager().getRepository(UsuarioPos).save(usuarioPos);
+                var subTitle:string = "Tu Servicio ha sido entregado";
+                var messageText:string = "Tu Servicio ha sido entregado. Gracias por utilizar los servicios de SEApp.";
+                this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText,"deliver");
+                break;
+        }
         return registroServicio;
     }
 
@@ -161,9 +181,15 @@ export class ServicioBusiness
         }
     }
 
+    async GetServiciosByCliente(idCliente:number):Promise<Servicio[]>
+    {        
+            var servicios=await getManager().getRepository(Servicio).find({where:{idCliente:idCliente }, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino","idCiudadOrigen.idDepartamento", "idCiudadDestino.idDepartamento", "idTipoVehiculo", "estadoServicio", "pagos", "pagos.idMedioPago", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos"]});
+            return servicios;
+    }
+
     async GetServicio(id:number):Promise<Servicio>
     {
-        var res=await getManager().getRepository(Servicio).findOne({where:{id:id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago","registroServicios","idTipoVehiculo","idCliente"]});
+        var res=await getManager().getRepository(Servicio).findOne({where:{id:id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago","registroServicios","idTipoVehiculo","idCliente", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos", "idTipoServicio"]});
         return res;
     }
 

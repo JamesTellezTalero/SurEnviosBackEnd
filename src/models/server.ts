@@ -1,25 +1,25 @@
 import * as express from 'express';
 import { createConnection } from 'typeorm';
-import { UsuarioBusiness } from './Business/UsuariosBusiness';
+import { UsuarioBusiness } from './business/UsuariosBusiness';
 import { Response } from './models/Response';
 import { TypeResponse} from './models/Response';
 import { TypedJSON } from 'typedjson';
 import { LoginRequest } from './models/LoginRequest';
 import { dbConfig } from './dbConfig';
 import { EstablecimientoRequest } from './models/EstablecimientoRequest';
-import { EstablecimientoBusiness } from './Business/EstablecimientoBusiness';
+import { EstablecimientoBusiness } from './business/EstablecimientoBusiness';
 import Establecimiento  from './entities/Establecimiento';
 import { UsuarioRequest } from './models/UsuarioRequest';
-import { ParametersBusiness } from './Business/ParametersBusiness';
+import { ParametersBusiness } from './business/ParametersBusiness';
 import { TurnosRequest } from './models/TurnosRequest';
-import { TurnoBusiness } from './Business/TurnoBusiness';
+import { TurnoBusiness } from './business/TurnoBusiness';
 import Turnos from './entities/Turnos';
 import { CancelTurnoRequest } from './models/CancelTurnoRequest';
 import { PwdChangeRequest } from './models/PwdChangeRequest';
 import { PushTokenRequest } from './models/PushTokenRequest';
 import { RecoverRequest } from './models/RecoverRequest';
 import { EncuestaRequest } from './models/EncuestaRequest';
-import { AthleticBusiness } from './Business/AthleticBusiness';
+import { AthleticBusiness } from './business/AthleticBusiness';
 
 const UsuarioB = new UsuarioBusiness()
 const EstablecimientoB = new EstablecimientoBusiness();

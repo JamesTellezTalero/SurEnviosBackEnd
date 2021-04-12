@@ -50,6 +50,18 @@ export class Servicio {
   @Column("float", { name: "lonDest", nullable: true, precision: 53 })
   lonDest: number | null;
 
+  @Column("int", { name: "Peso" })
+  peso: number;
+
+  @Column("int", { name: "Cantidad", nullable: true })
+  cantidad: number | null;
+
+  @Column("bit", { name: "Programado", default: () => "(0)" })
+  programado: boolean;
+
+  @Column("datetime", { name: "FechaProgramacion", nullable: true })
+  fechaProgramacion: Date | null;
+
   @OneToMany(() => Pago, (pago) => pago.idServicio)
   pagos: Pago[];
 
