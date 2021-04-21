@@ -25,6 +25,10 @@ export class TipoServicio {
   @Column("bit", { name: "Estado", default: () => "(1)" })
   estado: boolean;
 
+  @jsonMember
+  @Column("int", { name: "codxue", nullable: true })
+  codxue: number | null;
+
   @OneToMany(() => Servicio, (servicio) => servicio.idTipoServicio)
   servicios: Servicio[];
 }

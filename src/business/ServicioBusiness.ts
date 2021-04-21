@@ -16,9 +16,14 @@ import { Usuario } from "../entities/Usuario";
 import { TipoServicio } from "../entities/TipoServicio";
 import { NotificationPushBusiness } from "./NotificationPushBusiness";
 import { UsuarioPos } from "../entities/UsuarioPos";
+import axios from "axios";
+import { GoogleMapsResponse } from "../entities/GoogleMapsResponse";
 
 export class ServicioBusiness
 {
+    GoogleApiUrl="https://maps.googleapis.com/maps/api/distancematrix/json?";
+    GoogleApiKey="AIzaSyAmcUiWsvsfeLk6_2aLUCXwjuSe4pR2ZL4";
+    
     PushB=new NotificationPushBusiness();
     async CrearServicioCliente(servicio:ServicioModel):Promise<Servicio>
     {
@@ -94,7 +99,7 @@ export class ServicioBusiness
     async AddRegistroServicio(registro:RegistroServicioModel)
     {
         var registroServicio:RegistroServicio = new RegistroServicio();
-        var servicio = await getManager().getRepository(Servicio).findOne({where:{id:registro.idServicio}, relations:["idCliente","idUsuario", "idUsuario.idPersona"]});
+        var servicio = await getManager().getRepository(Servicio).findOne({where:{id:registro.idServicio}, relations:["idCliente","idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos", "idTipoVehiculo"]});
         registroServicio.idServicio = servicio;
         registroServicio.idEstadoServicio = await getManager().getRepository(EstadoServicio).findOne({where:{id:registro.idEstadoServicio}});
         registroServicio.observacion = registro.observacion;
@@ -102,16 +107,31 @@ export class ServicioBusiness
         registroServicio = await getManager().getRepository(RegistroServicio).save(registroServicio);
         servicio.estadoServicio=registroServicio.idEstadoServicio;
         await getManager().getRepository(Servicio).save(servicio);
+        var placas="";
+        if(servicio.idUsuario.vehiculos.length>0)
+            placas = " de placas "+servicio.idUsuario.vehiculos[0].placa;
         switch(servicio.estadoServicio.nombre)
         {
             case "Programado":
+                var distance=await this.GetDistance(servicio.latOrigen,servicio.lonOrigen, servicio.latDest,servicio.lonDest);
+                var eta="";
+                if(distance!=null)
+                {
+                    eta="El tiempo estimado de llegada es de "+distance.rows[0].elements[0].duration.text;
+                }
                 var subTitle:string = "Tu Solicitud está próxima a ser recogida";
-                var messageText:string = "Tu servicio será atendido por "+ servicio.idUsuario.idPersona.nombres + " " +servicio.idUsuario.idPersona.apellidos + ". En este momento se encuentra dirigiéndose al punto de recogida.";
+                var messageText:string = "Tu Servicio va en camino llevado por "+servicio.idUsuario.idPersona.nombres+ " " + servicio.idUsuario.idPersona.apellidos + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + placas + ". Dentro de poco estará llegando a tu dirección con tu solicitud." + eta;
                 this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "onroute");
                 break;
             case "Recepcionado":
+                var distance=await this.GetDistance(servicio.latOrigen,servicio.lonOrigen, servicio.latDest,servicio.lonDest);
+                var eta="";
+                if(distance!=null)
+                {
+                    eta="El tiempo estimado de llegada es de "+distance.rows[0].elements[0].duration;
+                }
                 var subTitle:string = "Tu Servicio va en camino";
-                var messageText:string = "Tu Servicio va en camino llevado por "+servicio.idUsuario.idPersona.nombres+ " "+servicio.idUsuario.idPersona.apellidos+ ". Dentro de poco estará llegando a su destino.";
+                var messageText:string = "Tu Servicio va en camino llevado por "+servicio.idUsuario.idPersona.nombres+ " "+servicio.idUsuario.idPersona.apellidos+ + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + placas + ". Dentro de poco estará llegando a su destino." + eta;
                 this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText,"pickup");
                 break;
             case "Entregado":
@@ -145,6 +165,14 @@ export class ServicioBusiness
         var item=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:estado}});
         var servicios=await getManager().getRepository(Servicio).find({where:{estadoServicio:item}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago"]});
         return servicios;
+    }
+
+    async GetDistance(latOrg:number, lonOrg:number, latDest:number, lonDest:number)
+    {
+        var url=this.GoogleApiUrl+"origins="+latOrg+","+lonOrg+"&destinations="+latDest+","+lonDest+"&key="+this.GoogleApiKey;
+        var res=await axios.get(url);
+        var googleRes:GoogleMapsResponse=res.data;
+        return googleRes;
     }
 
     async GetServiciosByUsuarioActivos(idUsuario:number):Promise<Servicio[]>
@@ -183,7 +211,7 @@ export class ServicioBusiness
 
     async GetServiciosByCliente(idCliente:number):Promise<Servicio[]>
     {        
-            var servicios=await getManager().getRepository(Servicio).find({where:{idCliente:idCliente }, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino","idCiudadOrigen.idDepartamento", "idCiudadDestino.idDepartamento", "idTipoVehiculo", "estadoServicio", "pagos", "pagos.idMedioPago", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos"]});
+            var servicios=await getManager().getRepository(Servicio).find({where:{idCliente:idCliente }, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino","idCiudadOrigen.idDepartamento", "idCiudadDestino.idDepartamento", "idTipoVehiculo", "idTipoServicio", "estadoServicio", "pagos", "pagos.idMedioPago", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos"]});
             return servicios;
     }
 

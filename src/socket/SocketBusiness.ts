@@ -166,9 +166,9 @@ export class SocketBusiness extends EventEmitter
         var idServicio=parseInt(request.GetParameter("idServicio").value);
         var idUsuario=parseInt(request.GetParameter("idUsuario").value);
         var aceptado=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Aceptado"}});
-        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}, relations:["idPersona"]});
+        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}, relations:["idPersona", "vehiculos"]});
         var usuarioPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:idUsuario}});
-        var servicio= await getManager().getRepository(Servicio).findOne({where:{id:idServicio}, relations:["estadoServicio","idCliente"]});
+        var servicio= await getManager().getRepository(Servicio).findOne({where:{id:idServicio}, relations:["estadoServicio","idCliente", "idTipoVehiculo"]});
         console.log("validando Servicio en estado solicitado y domiciliario nulo");
         if(servicio.estadoServicio.nombre=="Solicitado" && servicio.idUsuario==null)
         {
@@ -183,7 +183,7 @@ export class SocketBusiness extends EventEmitter
             domReq = await getManager().getRepository(UsuarioRequest).save(domReq);
             response={ idServicio:idServicio, asignado:true, mensaje:"El Servicio ha sido asignado. Por favor diríjase al sitio de recogida."};
             var subTitle:string = "Tu Solicitud de servicio ha sido aceptado";
-            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " +usuario.idPersona.apellidos + ". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
+            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " +usuario.idPersona.apellidos + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa + ". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
             this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "take");
             sm.type=TypeResponse.Ok;
             sendResponse=true;
@@ -212,17 +212,17 @@ export class SocketBusiness extends EventEmitter
         var response;
         var idPedido=parseInt(request.GetParameter("idPedido").value);
         var idDomiciliario=parseInt(request.GetParameter("idDomiciliario").value);
-        var enProceso=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"En proceso"}});
+        var enProceso=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Programado"}});
         var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idDomiciliario}, relations:["idPersona"]});
-        var Servicio= await getManager().getRepository(Servicio).findOne({where:{id:idPedido}, relations:["idEstadoPedido","idCliente", "idDomiciliario"]});
-        if(Servicio.idEstadoPedido.nombre=="Aceptado" && Servicio.idDomiciliario.id==usuario.id)
+        var servicio= await getManager().getRepository(Servicio).findOne({where:{id:idPedido}, relations:["idEstadoPedido","idCliente", "idDomiciliario"]});
+        if(servicio.estadoServicio.nombre=="Aceptado" && servicio.idUsuario.id==usuario.id)
         {
-            Servicio.idEstadoPedido=enProceso;
-            Servicio= await getManager().getRepository(Servicio).save(Servicio);
+            servicio.estadoServicio=enProceso;
+            servicio= await getManager().getRepository(Servicio).save(servicio);
             response={ idPedido:idPedido, asignado:true, mensaje:"Por favor diríjase al sitio de entrega."};
             var subTitle:string = "Tu Servicio va en camino";
-            var messageText:string = "Tu Servicio va en camino llevado por "+usuario.idPersona.nombres+ ". Dentro de poco estará llegando a tu dirección con tu solicitud.";
-            this.PushB.Notificar(Servicio.idCliente.id, Servicio.id, subTitle,messageText,"pickup");
+            var messageText:string = "Tu Servicio va en camino llevado por "+usuario.idPersona.nombres+ + " en un vehículo tipo "+ servicio.idTipoVehiculo.nombre+" de placas "+usuario.vehiculos[0].placa+". Dentro de poco estará llegando a tu dirección con tu solicitud.";
+            this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText,"pickup");
             sm.type=TypeResponse.Ok;
         }
         else
