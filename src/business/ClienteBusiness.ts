@@ -22,7 +22,7 @@ export class ClienteBusiness{
 
     async CreatePerfil(newUser:Cliente):Promise<Cliente>
     {
-        var exist = await getManager().getRepository(Cliente).findOne({where : {Email : newUser.email}});
+        var exist = await getManager().getRepository(Cliente).findOne({where : {email : newUser.email}});
         if(exist!=null)
             return null;
         var data = getManager().getRepository(Cliente).save(newUser);

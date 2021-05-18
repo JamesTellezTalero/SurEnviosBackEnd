@@ -16,7 +16,13 @@ export class ServicioModel
     direccionOrigen: string;
 
     @jsonMember
+    compDirOrigen: string;
+
+    @jsonMember
     direccionDestino: string;
+
+    @jsonMember
+    compDirDestino: string;
 
     @jsonMember
     descripcionCarga: string;

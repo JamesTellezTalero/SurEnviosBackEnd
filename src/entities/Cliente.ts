@@ -7,8 +7,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Municipio } from "./Municipio";
 import { TipoDocumento } from "./TipoDocumento";
+import { Municipio } from "./Municipio";
 import { Servicio } from "./Servicio";
 import { jsonMember, jsonObject } from "typedjson";
 
@@ -60,13 +60,17 @@ export class Cliente {
   @Column("bit", { name: "Estado", default: () => "(1)" })
   estado: boolean;
 
-  @ManyToOne(() => Municipio, (municipio) => municipio.clientes)
-  @JoinColumn([{ name: "IdCiudad", referencedColumnName: "id" }])
-  idCiudad: Municipio;
+  @jsonMember
+  @Column("varchar", { name: "Foto", nullable: true, length: 500 })
+  foto: string | null;
 
   @ManyToOne(() => TipoDocumento, (tipoDocumento) => tipoDocumento.clientes)
   @JoinColumn([{ name: "IdTipoDocumento", referencedColumnName: "id" }])
   idTipoDocumento: TipoDocumento;
+
+  @ManyToOne(() => Municipio, (municipio) => municipio.clientes)
+  @JoinColumn([{ name: "IdCiudad", referencedColumnName: "id" }])
+  idCiudad: Municipio;
 
   @OneToMany(() => Servicio, (servicio) => servicio.idCliente)
   servicios: Servicio[];

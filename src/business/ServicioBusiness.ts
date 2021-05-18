@@ -31,7 +31,9 @@ export class ServicioBusiness
         newServicio.idCliente=servicio.idCliente;
         newServicio.descripcionCarga=servicio.descripcionCarga;
         newServicio.direccionOrigen=servicio.direccionOrigen;
+        newServicio.compDirOrigen=servicio.compDirOrigen;
         newServicio.direccionDestino=servicio.direccionDestino;
+        newServicio.compDirDestino=servicio.compDirDestino;
         newServicio.idCiudadOrigen=servicio.idCiudadOrigen;
         newServicio.idCiudadDestino=servicio.idCiudadDestino;
         newServicio.estadoServicio=servicio.estadoServicio;
@@ -70,7 +72,9 @@ export class ServicioBusiness
         }
         currentService.descripcionCarga=servicio.descripcionCarga;
         currentService.direccionOrigen=servicio.direccionOrigen;
+        currentService.compDirOrigen=servicio.compDirOrigen;
         currentService.direccionDestino=servicio.direccionDestino;
+        currentService.compDirDestino=servicio.compDirDestino;
         currentService.idCiudadOrigen=servicio.idCiudadOrigen;
         currentService.idCiudadDestino=servicio.idCiudadDestino;
         switch(servicio.estadoServicio.nombre)

@@ -1,3 +1,4 @@
+import { jsonMember, jsonObject } from "typedjson";
 import {
   Column,
   Entity,
@@ -9,15 +10,19 @@ import { Cliente } from "./Cliente";
 import { Persona } from "./Persona";
 import { Propietario } from "./Propietario";
 
+@jsonObject
 @Index("PK_TipoDocumento", ["id"], { unique: true })
 @Entity("TipoDocumento", { schema: "dbo" })
 export class TipoDocumento {
+  @jsonMember
   @PrimaryGeneratedColumn({ type: "int", name: "Id" })
   id: number;
 
+  @jsonMember
   @Column("varchar", { name: "Nombre", length: 100 })
   nombre: string;
 
+  @jsonMember
   @Column("bit", { name: "Estado", default: () => "(1)" })
   estado: boolean;
 

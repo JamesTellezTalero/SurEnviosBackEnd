@@ -10,8 +10,8 @@ import {
 import { Pago } from "./Pago";
 import { RegistroServicio } from "./RegistroServicio";
 import { EstadoServicio } from "./EstadoServicio";
-import { Municipio } from "./Municipio";
 import { TipoServicio } from "./TipoServicio";
+import { Municipio } from "./Municipio";
 import { Cliente } from "./Cliente";
 import { Usuario } from "./Usuario";
 import { TipoVehiculo } from "./TipoVehiculo";
@@ -62,6 +62,12 @@ export class Servicio {
   @Column("datetime", { name: "FechaProgramacion", nullable: true })
   fechaProgramacion: Date | null;
 
+  @Column("varchar", { name: "CompDirOrigen", nullable: true, length: 200 })
+  compDirOrigen: string | null;
+
+  @Column("varchar", { name: "CompDirDestino", nullable: true, length: 200 })
+  compDirDestino: string | null;
+
   @OneToMany(() => Pago, (pago) => pago.idServicio)
   pagos: Pago[];
 
@@ -75,6 +81,10 @@ export class Servicio {
   @JoinColumn([{ name: "EstadoServicio", referencedColumnName: "id" }])
   estadoServicio: EstadoServicio;
 
+  @ManyToOne(() => TipoServicio, (tipoServicio) => tipoServicio.servicios)
+  @JoinColumn([{ name: "IdTipoServicio", referencedColumnName: "id" }])
+  idTipoServicio: TipoServicio;
+
   @ManyToOne(() => Municipio, (municipio) => municipio.servicios)
   @JoinColumn([{ name: "IdCiudadOrigen", referencedColumnName: "id" }])
   idCiudadOrigen: Municipio;
@@ -82,10 +92,6 @@ export class Servicio {
   @ManyToOne(() => Municipio, (municipio) => municipio.servicios2)
   @JoinColumn([{ name: "IdCiudadDestino", referencedColumnName: "id" }])
   idCiudadDestino: Municipio;
-
-  @ManyToOne(() => TipoServicio, (tipoServicio) => tipoServicio.servicios)
-  @JoinColumn([{ name: "IdTipoServicio", referencedColumnName: "id" }])
-  idTipoServicio: TipoServicio;
 
   @ManyToOne(() => Cliente, (cliente) => cliente.servicios)
   @JoinColumn([{ name: "IdCliente", referencedColumnName: "id" }])
