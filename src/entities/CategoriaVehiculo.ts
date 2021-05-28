@@ -5,10 +5,11 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { TipoVehiculo } from "./TipoVehiculo";
+import { SubCategoriaVehiculo } from "./SubCategoriaVehiculo";
 
 @Index("CategoriaCamion_PK", ["id"], { unique: true })
 @Index("CategoriaCamion_UN", ["id"], { unique: true })
+@Index("SubCategoriaCamion_UN", ["id"], { unique: true })
 @Entity("CategoriaVehiculo", { schema: "dbo" })
 export class CategoriaVehiculo {
   @PrimaryGeneratedColumn({ type: "int", name: "Id" })
@@ -23,6 +24,9 @@ export class CategoriaVehiculo {
   @Column("varchar", { name: "Imagen", nullable: true, length: 200 })
   imagen: string | null;
 
-  @OneToMany(() => TipoVehiculo, (tipoVehiculo) => tipoVehiculo.idCategoria)
-  tipoVehiculos: TipoVehiculo[];
+  @OneToMany(
+    () => SubCategoriaVehiculo,
+    (subCategoriaVehiculo) => subCategoriaVehiculo.idCategoria
+  )
+  subCategoriaVehiculos: SubCategoriaVehiculo[];
 }

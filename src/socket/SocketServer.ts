@@ -22,7 +22,7 @@ export class SocketServer
         myglobal.clientSockets=[];
         this.SocketB=new SocketBusiness();
         var webSocketServer = ws.Server;
-        var webSocketServerObject = new webSocketServer({ port: 9020 });
+        var webSocketServerObject = new webSocketServer({ port: 9010 });
         webSocketServerObject.on('connection', function (ws, req) {
             var userID = parseInt(req.url.substr(1), 10);
             var ipAddress=req.socket.remoteAddress;

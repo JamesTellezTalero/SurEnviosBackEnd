@@ -28,6 +28,7 @@ import { TipoServicio } from "./entities/TipoServicio";
 import { TripulanteVehiculo } from "./entities/TripulanteVehiculo";
 import { PushNotificationData } from "./entities/PushNotificationData";
 import { UsuarioRequest } from "./entities/UsuarioRequest";
+import { SubCategoriaVehiculo } from "./entities/SubCategoriaVehiculo";
 
 const dbConfig: ConnectionOptions = {
     type: "mssql",
@@ -54,6 +55,7 @@ const dbConfig: ConnectionOptions = {
       Regional,
       RegistroServicio,
       Servicio,
+      SubCategoriaVehiculo,
       TipoDocumento,
       TipoElementoRegistro,
       TipoPago,

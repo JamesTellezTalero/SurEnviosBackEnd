@@ -20,7 +20,7 @@ export class ParametrosBusiness
         parametros.ciudades=await getManager().getRepository(Municipio).find({relations:["idDepartamento", "regional"]});
         parametros.departamentos=await getManager().getRepository(Departamento).find();
         parametros.estadosServicio=await getManager().getRepository(EstadoServicio).find();
-        parametros.categoriasVehiculo=await getManager().getRepository(CategoriaVehiculo).find({relations:["tipoVehiculos"]});
+        parametros.categoriasVehiculo=await getManager().getRepository(CategoriaVehiculo).find({relations:["subCategoriaVehiculos","subCategoriaVehiculos.tipoVehiculos"]});
         parametros.tiposDocumento=await getManager().getRepository(TipoDocumento).find();
         parametros.tiposVinculacion=await getManager().getRepository(TipoVinculacion).find();
         parametros.tiposTripulante=await getManager().getRepository(TipoTripulante).find();
