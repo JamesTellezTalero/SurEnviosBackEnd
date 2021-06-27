@@ -121,7 +121,7 @@ export class ServicioBusiness
                 var eta="";
                 if(distance!=null)
                 {
-                    eta="El tiempo estimado de llegada es de "+distance.rows[0].elements[0].duration.text;
+                    eta=" El tiempo estimado de llegada es de "+distance.rows[0].elements[0].duration.text;
                 }
                 var subTitle:string = "Tu Solicitud está próxima a ser recogida";
                 var messageText:string = "Tu Servicio va en camino llevado por "+servicio.idUsuario.idPersona.nombres+ " " + servicio.idUsuario.idPersona.apellidos + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + placas + ". Dentro de poco estará llegando a tu dirección con tu solicitud." + eta;
@@ -132,10 +132,10 @@ export class ServicioBusiness
                 var eta="";
                 if(distance!=null)
                 {
-                    eta="El tiempo estimado de llegada es de "+distance.rows[0].elements[0].duration;
+                    eta=" El tiempo estimado de llegada es de "+distance.rows[0].elements[0].duration.text;
                 }
                 var subTitle:string = "Tu Servicio va en camino";
-                var messageText:string = "Tu Servicio va en camino llevado por "+servicio.idUsuario.idPersona.nombres+ " "+servicio.idUsuario.idPersona.apellidos+ + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + placas + ". Dentro de poco estará llegando a su destino." + eta;
+                var messageText:string = "Tu Servicio va en camino llevado por "+servicio.idUsuario.idPersona.nombres+ " "+servicio.idUsuario.idPersona.apellidos+ " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + placas + ". Dentro de poco estará llegando a su destino." + eta;
                 this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText,"pickup");
                 break;
             case "Entregado":

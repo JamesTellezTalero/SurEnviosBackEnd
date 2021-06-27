@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Cliente } from "./Cliente";
+import { DireccionCliente } from "./DireccionCliente";
 import { Departamento } from "./Departamento";
 import { Regional } from "./Regional";
 import { Propietario } from "./Propietario";
@@ -36,6 +37,12 @@ export class Municipio {
 
   @OneToMany(() => Cliente, (cliente) => cliente.idCiudad)
   clientes: Cliente[];
+
+  @OneToMany(
+    () => DireccionCliente,
+    (direccionCliente) => direccionCliente.idCiudad
+  )
+  direccionClientes: DireccionCliente[];
 
   @ManyToOne(() => Departamento, (departamento) => departamento.municipios)
   @JoinColumn([{ name: "IdDepartamento", referencedColumnName: "id" }])

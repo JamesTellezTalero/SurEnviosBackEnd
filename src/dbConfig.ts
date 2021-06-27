@@ -29,6 +29,7 @@ import { TripulanteVehiculo } from "./entities/TripulanteVehiculo";
 import { PushNotificationData } from "./entities/PushNotificationData";
 import { UsuarioRequest } from "./entities/UsuarioRequest";
 import { SubCategoriaVehiculo } from "./entities/SubCategoriaVehiculo";
+import { DireccionCliente } from "./entities/DireccionCliente";
 
 const dbConfig: ConnectionOptions = {
     type: "mssql",
@@ -43,6 +44,7 @@ const dbConfig: ConnectionOptions = {
       CategoriaVehiculo,
       Cliente,
       Departamento,
+      DireccionCliente,
       ElementoRegistro,
       EstadoServicio,
       Municipio,

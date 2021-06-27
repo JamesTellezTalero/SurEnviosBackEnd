@@ -11,6 +11,7 @@ import { TipoDocumento } from "./TipoDocumento";
 import { Municipio } from "./Municipio";
 import { Servicio } from "./Servicio";
 import { jsonMember, jsonObject } from "typedjson";
+import { DireccionCliente } from "./DireccionCliente";
 
 @Index("PK_Cliente", ["id"], { unique: true })
 @Entity("Cliente", { schema: "dbo" })
@@ -74,4 +75,10 @@ export class Cliente {
 
   @OneToMany(() => Servicio, (servicio) => servicio.idCliente)
   servicios: Servicio[];
+
+  @OneToMany(
+    () => DireccionCliente,
+    (direccionCliente) => direccionCliente.idCliente
+  )
+  direccionClientes: DireccionCliente[];
 }

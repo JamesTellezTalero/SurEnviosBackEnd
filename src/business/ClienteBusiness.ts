@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { getManager } from "typeorm";
 import { Cliente } from "../entities/Cliente";
+import { DireccionCliente } from "../entities/DireccionCliente";
 import { Servicio } from "../entities/Servicio";
 import { EmailBusiness } from "./EmailBusiness";
 
@@ -109,5 +110,16 @@ export class ClienteBusiness{
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;
+    }
+
+    CreateDireccion(direccion:DireccionCliente)
+    {
+        var dir = getManager().getRepository(DireccionCliente).save(direccion);
+        return dir;
+    }
+
+    DeleteDireccion(idDireccion:number)
+    {
+        getManager().getRepository(DireccionCliente).delete({id:idDireccion});
     }
 }

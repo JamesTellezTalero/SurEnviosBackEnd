@@ -63,17 +63,17 @@ export class SocketBusiness extends EventEmitter
     async GetPerfilByTipoServicio(idTipoServicio:number)
     {
         var tipoServicio=await getManager().getRepository(TipoServicio).findOne({where:{id:idTipoServicio}});
-        switch(tipoServicio.nombre)
+        switch(tipoServicio.nombre.toUpperCase())
         {
             case "MENSAJERIA EXPRESA":
                 return await getManager().getRepository(Perfil).findOne({where:{nombre:"Mensajería"}});
             case "PAQUETEO":
                 return await getManager().getRepository(Perfil).findOne({where:{nombre:"Paquetería"}});
-            case "Carga Dimensionada":
+            case "CARGA DIMENSIONADA":
                 return await getManager().getRepository(Perfil).findOne({where:{nombre:"Carga Dimensionada"}});
-            case "Diligencias":
+            case "DILIGENCIAS":
                 return await getManager().getRepository(Perfil).findOne({where:{nombre:"Diligencias"}});
-            case "Transporte Dedicado":
+            case "TRANSPORTE DEDICADO":
                 return await getManager().getRepository(Perfil).findOne({where:{nombre:"Transporte Dedicado"}});
         }
         return null;
