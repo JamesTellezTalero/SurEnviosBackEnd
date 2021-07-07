@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <mate charest="utf-8" />
+        <title>Guía de servicio</title>
+    </head>
+    <body>
+        <table width="100%">
+            <tr>
+                <td width="33%">
+                    <img src="APP-27.png" width="60%"/>
+                </td>
+                <td width="67%">
+                    {{servicio.Cliente}}<br/>
+                    {{servicio.nit}}<br/>
+                    {{servicio.direccion}}<br/>
+                    {{servicio.LineaAux}}<br/>
+                    {{servicio.web}}<br/>
+                </td>
+            </tr>
+        </table>
+        <table width=100%>
+            <tr>
+                <td bgcolor="#000000" height="2"></td>
+            </tr>
+        </table>
+        <table width=100%>
+            <tr>
+                <td width="50%">{{servicio.ResMIN}}</td>
+                <td width="50%">{{servicio.ResTrans}}</td>
+            </tr>
+        </table>
+        <table width=100%>
+            <tr>
+                <td bgcolor="#000000" height="2"></td>
+            </tr>
+        </table>
+        <table width="100%"">
+            <tr>
+                <td width="30%">SERVICIO</td>
+                <td width="70%">{{servicio.Nom_Corto}}</td>
+            </tr>
+            <tr>
+                <td>GUIA DE TRANSPORTE No.</td>
+                <td>{{servicio.NGuiaP}}</td>
+            </tr>
+            <tr>
+                <td>FECHA ADMISION </td>
+                <td>{{servicio.Admision}}</td>
+            </tr>
+            <tr>
+                <td colspan="2" bgcolor="#000000"></td>
+            </tr>
+            <tr>
+                <td>ORIGEN:</td>
+                <td>{{servicio.CiudadOrigen}}</td>
+            </tr>
+            <tr>
+                <td>ID REMITENTE</td>
+                <td>{{servicio.id_Remitente}}</td>
+            </tr>
+            <tr>
+                <td>REMITENTE</td>
+                <td>{{servicio.Nom_Remitente}}</td>
+            </tr>
+            <tr>
+                <td>DIRECCION</td>
+                <td>{{servicio.Dir_Remitente}}</td>
+            </tr>
+            <tr>
+                <td>TELEFONO</td>
+                <td>{{servicio.Tel_Remitente}}</td>
+            </tr>
+            <tr>
+                <td colspan="2" bgcolor="#000000"></td>
+            </tr>
+            <tr>
+                <td>DESTINO: </td>
+                <td>{{servicio.CiudadDestino}}</td>
+            </tr>
+            <tr>
+                <td>ID DESTINATARIO</td>
+                <td>{{servicio.id_Destinatario}}</td>
+            </tr>
+            <tr>
+                <td>DESTINATARIO</td>
+                <td>{{servicio.Nom_Destinatario}}</td>
+            </tr>
+            <tr>
+                <td>DIRECCION</td>
+                <td>{{servicio.Dir_Destinatario}}</td>
+            </tr>
+            <tr>
+                <td>TELEFONO</td>
+                <td>{{servicio.Tel_Destinatario}}</td>
+            </tr>
+            <tr>
+                <td colspan="2" bgcolor="#000000"></td>
+            </tr>
+            <tr>
+                <td>DATOS DEL DESPACHO </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>DICE CONTENER:</td>
+                <td>{{servicio.Dice_Contener}}</td>
+            </tr>
+            <tr>
+                <td>DOCUMENTOS</td>
+                <td>{{servicio.Num_Documentos}}</td>
+            </tr>
+            <tr>
+                <td>NOTAS 1</td>
+                <td>{{servicio.Texto_Guia}}</td>
+            </tr>
+            <tr>
+                <td>NOTAS 2</td>
+                <td>{{servicio.Accion_NotaGuia}}</td>
+            </tr>
+            <tr>
+                <td colspan="2" bgcolor="#000000"></td>
+            </tr>
+            <tr>
+                <td>VALORES</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table width="100%">
+                        <tr>
+                            <td width="50%">
+                                <table width="100%">
+                                    <tr>
+                                        <td>UNIDADES</td>
+                                        <td>{{servicio.Num_Unidades}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PESO REAL</td>
+                                        <td>{{servicio.PesoReal_K}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PESO VOLUMEN</td>
+                                        <td>{{servicio.PesoVolumen_K}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PESO COBRADO </td>
+                                        <td>{{servicio.K_Cobrados}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td width="50%">
+                                <table width="100%">
+                                    <tr>
+                                        <td>VALOR DECLARADO</td>
+                                        <td>{{servicio.Valor_Declarado}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>VALOR FLETE</td>
+                                        <td>{{servicio.Valor_Flete}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>VALOR COSTO MANEJO</td>
+                                        <td>{{servicio.Valor_CostoM}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>VALOR OTROS</td>
+                                        <td>{{servicio.Valor_Otros}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>VALOR TOTAL</td>
+                                        <td>{{servicio.TotFlete}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" bgcolor="#000000"></td>
+            </tr>
+        </table>
+    </body>
+</html>

@@ -25,6 +25,8 @@ import { UsuarioRequest } from './models/UsuarioRequest';
 import { SocketBusiness } from './socket/SocketBusiness';
 import { SocketServer } from './socket/SocketServer';
 import { SocketModel, SocketParameter } from './models/SocketModel';
+import { XueServiceBusiness } from './business/XueServicesBusiness';
+import { XueServiceRequest } from './models/XueServiceRequest';
 
 const ClienteB = new ClienteBusiness();
 const UsuarioB = new UsuarioBusiness();
@@ -33,6 +35,7 @@ const ParametrosB=new ParametrosBusiness();
 const VehiculoB=new VehiculoBusiness();
 const SocketB=new SocketBusiness();
 const WSServer=new SocketServer();
+const XueB=new XueServiceBusiness();
 
 WSServer.StartSocket();
 
@@ -997,39 +1000,6 @@ app.post('/GetServicio', async(req,res)=>{
     }
 });
 
-/*app.post('/loginUsuario', (req, res)=>{
-    var response:Response=new Response();
-    var serializer = new TypedJSON(LoginRequest);
-    var logReq=serializer.parse(req.body);
-    if(logReq!=null)
-    {
-        var userLogged = UsuarioB.Login(logReq.username.trim(),logReq.password.trim());
-        userLogged.then((result)=> {
-            if(result!=null)
-            {
-                response.Message="";
-                response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(result);
-            }   
-            else
-            {
-                response.Message="Usuario no existe o contraseña incorrecta";
-                response.Type=TypeResponse.Error;
-                response.Value=null;
-            }
-            res.send(response);
-        });
-    }
-    else
-    {
-        response.Message="Solicitud Incorrecta";
-        response.Type=TypeResponse.Error;
-        response.Value=null;
-        res.send(response);
-    }
-    
-});*/
-
 app.post('/GetVehiculosByPos', async(req,res)=>{
     var response:Response=new Response();
     try{            
@@ -1169,6 +1139,46 @@ app.post('/GetParametros',async(req, res)=>{
         res.send(response);
     }
 
+});
+
+app.post('/SendPdfXue', async (req, res)=>{
+    var response:Response=new Response();
+    try{            
+        var serializer = new TypedJSON(XueServiceRequest);
+        var genReq=serializer.parse(req.body);
+        if(genReq!=null)
+        {
+            var usuarioPos=await XueB.CreatePdf(genReq.XueService, genReq.email);
+            if(usuarioPos!=null)
+            {
+                response.Message="";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(usuarioPos);
+            }
+            else
+            {
+                response.Message="No se encontraron registros";
+                response.Type=TypeResponse.Error;
+                response.Value=null
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="Solicitud Incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+            res.send(response);
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
 });
 
 app.post('/SendSocketPedido', async(req, res)=>{
