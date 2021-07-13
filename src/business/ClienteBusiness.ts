@@ -2,7 +2,9 @@ import { createHash } from "crypto";
 import { getManager } from "typeorm";
 import { Cliente } from "../entities/Cliente";
 import { DireccionCliente } from "../entities/DireccionCliente";
+import { Municipio } from "../entities/Municipio";
 import { Servicio } from "../entities/Servicio";
+import { DireccionRequest } from "../models/DireccionRequest";
 import { EmailBusiness } from "./EmailBusiness";
 
 export class ClienteBusiness{
@@ -36,6 +38,10 @@ export class ClienteBusiness{
             relations:[
                 "idCiudad",
                 "idTipoDocumento",
+                "direccionClientes",
+                "direccionClientes.idCiudad",
+                "direccionClientes.idCiudad.idDepartamento",
+                "direccionClientes.idCiudad.regional"
                 //"servicios"
             ]
         });
@@ -112,10 +118,17 @@ export class ClienteBusiness{
         return result;
     }
 
-    CreateDireccion(direccion:DireccionCliente)
+    async CreateDireccion(direccion:DireccionRequest)
     {
-        var dir = getManager().getRepository(DireccionCliente).save(direccion);
-        return dir;
+        var newDir:DireccionCliente=new DireccionCliente();
+        newDir.direccion=direccion.direccion;
+        newDir.complemento=direccion.complemento;
+        newDir.esDefault=direccion.EsDefault;
+        newDir.idCliente=await getManager().getRepository(Cliente).findOne({where:{id:direccion.IdCliente}});
+        newDir.idCiudad=await getManager().getRepository(Municipio).findOne({where :{id:direccion.idCiudad}});
+
+        var data= getManager().getRepository(DireccionCliente).save(newDir);
+        return data;
     }
 
     DeleteDireccion(idDireccion:number)

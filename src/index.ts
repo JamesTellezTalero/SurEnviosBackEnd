@@ -27,6 +27,8 @@ import { SocketServer } from './socket/SocketServer';
 import { SocketModel, SocketParameter } from './models/SocketModel';
 import { XueServiceBusiness } from './business/XueServicesBusiness';
 import { XueServiceRequest } from './models/XueServiceRequest';
+import { DireccionRequest } from './models/DireccionRequest';
+import { DireccionCliente } from './entities/DireccionCliente';
 
 const ClienteB = new ClienteBusiness();
 const UsuarioB = new UsuarioBusiness();
@@ -345,6 +347,78 @@ app.post('/GetServiciosByCliente', async(req,res)=>{
             response.Type=TypeResponse.Error;
             response.Value=null;
             res.send(response);
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/CreateDireccionCliente', async(req,res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(DireccionRequest);
+        var usrDir=serializer.parse(req.body);
+        if(usrDir!=null)
+        {
+            var newDir = await ClienteB.CreateDireccion(usrDir);
+            if(newDir!=null)
+            {
+                response.Message="";
+                response.Type=TypeResponse.Ok,
+                response.Value=JSON.stringify(newDir);
+            }
+            else
+            {
+                response.Message="No se pudo crear la dirección";
+                response.Type=TypeResponse.Error,
+                response.Value=null;
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="No se pudo crear la dirección";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/DeleteDireccionCliente', async(req,res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(GenericRequest);
+        var usrDir=serializer.parse(req.body);
+        if(usrDir!=null)
+        {
+            await ClienteB.DeleteDireccion(usrDir.Id);
+
+            response.Message="";
+            response.Type=TypeResponse.Ok,
+            response.Value=null;
+            res.send(response);
+        }
+        else
+        {
+            response.Message="No se pudo eliminar la dirección";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
         }
     }
     catch(error)

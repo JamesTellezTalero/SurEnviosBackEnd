@@ -6,3 +6,6 @@ tmp/
 temp/
 src/.DS_Store
 .DS_Store
+*.pdf
+*.jpg
+*.png

@@ -31,6 +31,9 @@ export class DireccionCliente {
   @Column("bit", { name: "Estado", default: () => "(1)" })
   estado: boolean;
 
+  @Column("bit", { name: "EsDefault", default: () => "(0)" })
+  esDefault: boolean;
+
   @ManyToOne(() => Cliente, (cliente) => cliente.direccionClientes)
   @JoinColumn([{ name: "IdCliente", referencedColumnName: "id" }])
   idCliente: Cliente;
