@@ -166,7 +166,7 @@ export class SocketBusiness extends EventEmitter
         var idServicio=parseInt(request.GetParameter("idServicio").value);
         var idUsuario=parseInt(request.GetParameter("idUsuario").value);
         var aceptado=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Aceptado"}});
-        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}, relations:["idPersona", "vehiculos"]});
+        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}, relations:["idPersona", "vehiculos", "vehiculos.idTipoVehiculo"]});
         var usuarioPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:idUsuario}});
         var servicio= await getManager().getRepository(Servicio).findOne({where:{id:idServicio}, relations:["estadoServicio","idCliente", "idTipoVehiculo"]});
         console.log("validando Servicio en estado solicitado y domiciliario nulo");
@@ -175,6 +175,10 @@ export class SocketBusiness extends EventEmitter
             console.log("in if");
             servicio.estadoServicio=aceptado;
             servicio.idUsuario=usuario;
+            if(servicio.idTipoVehiculo==null && usuario.vehiculos.length!=0)
+            {
+                servicio.idTipoVehiculo=usuario.vehiculos[0].idTipoVehiculo;
+            }
             servicio= await getManager().getRepository(Servicio).save(servicio);
             usuarioPos.enEntrega=true;
             getManager().getRepository(UsuarioPos).save(usuarioPos);

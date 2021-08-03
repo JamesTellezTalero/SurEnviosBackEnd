@@ -1222,7 +1222,7 @@ app.post('/SendPdfXue', async (req, res)=>{
         var genReq=serializer.parse(req.body);
         if(genReq!=null)
         {
-            var usuarioPos=await XueB.CreatePdf(genReq.XueService, genReq.email);
+            var usuarioPos=await XueB.CreatePdf(genReq.XueService, genReq.emailRemitente, genReq.emailDestinatario);
             if(usuarioPos!=null)
             {
                 response.Message="";

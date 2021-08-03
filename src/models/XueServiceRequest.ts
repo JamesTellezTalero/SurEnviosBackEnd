@@ -5,7 +5,10 @@ import { XueService } from "./XueService";
 export class XueServiceRequest
 {
     @jsonMember
-    email:string;
+    emailRemitente:string;
+
+    @jsonMember
+    emailDestinatario:string;
 
     @jsonMember
     xueService:string;

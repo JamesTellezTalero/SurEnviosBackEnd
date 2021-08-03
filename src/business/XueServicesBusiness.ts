@@ -5,7 +5,7 @@ import { EmailBusiness } from "./EmailBusiness";
 
 export class XueServiceBusiness
 {
-    async CreatePdf(servicio:XueService, email:string)
+    async CreatePdf(servicio:XueService, emailRemitente:string, emailDestinatario:string)
     {
         var filepath="./"+servicio.NGuiaP+".pdf";
         var emailB=new EmailBusiness();
@@ -26,7 +26,8 @@ export class XueServiceBusiness
           pdf.create(document, options)
           .then((res)=>{
               console.log(res);
-              emailB.SendMailWithFile(email, "Pendiente","Pendiente",filepath);
+              emailB.SendMailWithFile(emailRemitente,"Pendiente","Pendiente",filepath)
+              emailB.SendMailWithFile(emailDestinatario, "Pendiente","Pendiente",filepath);
           })
           .catch((error) => {
             console.error(error);
