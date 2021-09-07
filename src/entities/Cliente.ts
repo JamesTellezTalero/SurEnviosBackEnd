@@ -10,12 +10,12 @@ import {
 import { TipoDocumento } from "./TipoDocumento";
 import { Municipio } from "./Municipio";
 import { Servicio } from "./Servicio";
-import { jsonMember, jsonObject } from "typedjson";
 import { DireccionCliente } from "./DireccionCliente";
+import { jsonMember, jsonObject } from "typedjson";
 
+@jsonObject
 @Index("PK_Cliente", ["id"], { unique: true })
 @Entity("Cliente", { schema: "dbo" })
-@jsonObject
 export class Cliente {
   @jsonMember
   @PrimaryGeneratedColumn({ type: "int", name: "Id" })
@@ -65,10 +65,12 @@ export class Cliente {
   @Column("varchar", { name: "Foto", nullable: true, length: 500 })
   foto: string | null;
 
+  @jsonMember(()=>TipoDocumento)
   @ManyToOne(() => TipoDocumento, (tipoDocumento) => tipoDocumento.clientes)
   @JoinColumn([{ name: "IdTipoDocumento", referencedColumnName: "id" }])
   idTipoDocumento: TipoDocumento;
 
+  @jsonMember
   @ManyToOne(() => Municipio, (municipio) => municipio.clientes)
   @JoinColumn([{ name: "IdCiudad", referencedColumnName: "id" }])
   idCiudad: Municipio;

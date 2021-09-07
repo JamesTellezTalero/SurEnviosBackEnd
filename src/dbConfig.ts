@@ -30,10 +30,11 @@ import { PushNotificationData } from "./entities/PushNotificationData";
 import { UsuarioRequest } from "./entities/UsuarioRequest";
 import { SubCategoriaVehiculo } from "./entities/SubCategoriaVehiculo";
 import { DireccionCliente } from "./entities/DireccionCliente";
+import { RelacionPesoVehiculo } from "./entities/RelacionPesoVehiculo";
 
 const dbConfig: ConnectionOptions = {
     type: "mssql",
-    host: "rationalsoftware.ddns.net",
+    host: "190.60.126.214",
     port: 1433,
     username: "sa",
     password: "$lcs1648_*",
@@ -56,6 +57,7 @@ const dbConfig: ConnectionOptions = {
       PushNotificationData,
       Regional,
       RegistroServicio,
+      RelacionPesoVehiculo,
       Servicio,
       SubCategoriaVehiculo,
       TipoDocumento,

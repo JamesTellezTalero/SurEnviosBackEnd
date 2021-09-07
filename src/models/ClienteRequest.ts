@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { jsonMember, jsonObject, TypedJSON } from "typedjson";
 import { Cliente } from "../entities/Cliente";
 

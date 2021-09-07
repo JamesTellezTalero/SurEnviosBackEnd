@@ -1,14 +1,17 @@
-import { jsonMember, jsonObject } from "typedjson";
+import 'reflect-metadata';
 import {
   Column,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Cliente } from "./Cliente";
 import { Persona } from "./Persona";
 import { Propietario } from "./Propietario";
+import { jsonMember, jsonObject } from "typedjson";
 
 @jsonObject
 @Index("PK_TipoDocumento", ["id"], { unique: true })
