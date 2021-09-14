@@ -77,4 +77,7 @@ export class ServicioModel
 
     @jsonMember
     fechaProgramacion: Date | null;
+
+    @jsonMember
+    calificacion: number;
 }

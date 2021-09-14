@@ -62,7 +62,7 @@ export class Cliente {
   estado: boolean;
 
   @jsonMember
-  @Column("varchar", { name: "Foto", nullable: true, length: 500 })
+  @Column("varchar", { name: "Foto", nullable: true })
   foto: string | null;
 
   @jsonMember(()=>TipoDocumento)

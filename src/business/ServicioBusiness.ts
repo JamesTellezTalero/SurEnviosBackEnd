@@ -18,6 +18,7 @@ import { NotificationPushBusiness } from "./NotificationPushBusiness";
 import { UsuarioPos } from "../entities/UsuarioPos";
 import axios from "axios";
 import { GoogleMapsResponse } from "../entities/GoogleMapsResponse";
+import { Departamento } from "../entities/Departamento";
 
 export class ServicioBusiness
 {
@@ -95,6 +96,7 @@ export class ServicioBusiness
         currentService.cantidad=servicio.cantidad;
         currentService.programado=servicio.programado;
         currentService.fechaProgramacion=servicio.fechaProgramacion;
+        currentService.calificacion=servicio.calificacion;
         currentService.idTipoServicio=servicio.idTipoServicio;
         currentService = await getManager().getRepository(Servicio).save(currentService);        
         return getManager().getRepository(Servicio).findOne({where:{id:currentService.id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago","registroServicios","idTipoVehiculo","idCliente", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos", "idTipoServicio"]});
@@ -158,7 +160,7 @@ export class ServicioBusiness
         newElemento.idRegistroServicio=registro;
         newElemento.idTipoElemento=tipoElemento;
         var filename='img'+registro.id+'-'+Date.now()+'.jpg';
-        writeFileSync(filename, elemento.elemento);
+        writeFileSync(filename, elemento.elemento.split('-').join('+').split('.').join('='));
         newElemento.elemento=filename;
         newElemento=await getManager().getRepository(ElementoRegistro).save(newElemento);
         return newElemento;
@@ -214,14 +216,64 @@ export class ServicioBusiness
     }
 
     async GetServiciosByCliente(idCliente:number):Promise<Servicio[]>
-    {        
-            var servicios=await getManager().getRepository(Servicio).find({where:{idCliente:idCliente }, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino","idCiudadOrigen.idDepartamento", "idCiudadDestino.idDepartamento", "idTipoVehiculo", "idTipoServicio", "estadoServicio", "pagos", "pagos.idMedioPago", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos"]});
+    {
+        var res = await getManager().query(`SELECT 
+        s.Id, 
+        s.DireccionOrigen, 
+        s.CompDirOrigen,
+        s.DireccionDestino,
+        s.CompDirDestino,
+        s.FechaSolicitud,
+        m1.Id idMunicipioOrigen,
+        m1.Nombre nombreMunicipioOrigen, 
+        m2.Id idMunicipioDestino,
+        m2.Nombre nombreMunicipioDestino,
+        d1.Id idDeptoOrigen,
+        d1.Nombre nombreDeptoOrigen,
+        d2.Id idDeptoDestino,
+        d2.Nombre nombreDeptoDestino,
+        es.Id idEstado,
+        es.Nombre Estado 
+        from servicio s
+        inner join Municipio m1 on s.IdCiudadOrigen = m1.Id 
+        inner join Departamento d1 on m1.IdDepartamento = d1.Id 
+        inner join Municipio m2 on s.IdCiudadDestino = m2.Id 
+        inner join Departamento d2 on m2.IdDepartamento = d2.Id 
+        inner join EstadoServicio es on s.EstadoServicio = es.Id 
+        where IdCliente = ` + idCliente);
+        var servicios:Servicio[]=new Array(0);
+        res.forEach(e => {
+            var s:Servicio=new Servicio();
+            s.id=e.Id;
+            s.direccionOrigen=e.DireccionOrigen;
+            s.compDirOrigen=e.CompDirOrigen;
+            s.direccionDestino=e.DireccionDestino;
+            s.compDirDestino=e.CompDirDestino;
+            s.fechaSolicitud=e.FechaSolicitud;
+            s.idCiudadOrigen=new Municipio();
+            s.idCiudadOrigen.id=e.idMunicipioOrigen;
+            s.idCiudadOrigen.nombre=e.nombreMunicipioOrigen;
+            s.idCiudadOrigen.idDepartamento=new Departamento();
+            s.idCiudadOrigen.idDepartamento.id=e.idDeptoOrigen;
+            s.idCiudadOrigen.idDepartamento.nombre=e.nombreDeptoOrigen;
+            s.idCiudadDestino=new Municipio();
+            s.idCiudadDestino.id=e.idMunicipioDestino;
+            s.idCiudadDestino.nombre=e.nombreMunicipioDestino;
+            s.idCiudadDestino.idDepartamento=new Departamento();
+            s.idCiudadDestino.idDepartamento.id=e.idDeptoDestino;
+            s.idCiudadDestino.idDepartamento.nombre=e.nombreDeptoDestino;
+            s.estadoServicio=new EstadoServicio();
+            s.estadoServicio.id=e.idEstado;
+            s.estadoServicio.nombre=e.Estado;
+            servicios.push(s);
+        });
+            //var servicios=await getManager().getRepository(Servicio).find({where:{idCliente:idCliente }});//, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino","idCiudadOrigen.idDepartamento", "idCiudadDestino.idDepartamento", "estadoServicio"]});
             return servicios;
     }
 
     async GetServicio(id:number):Promise<Servicio>
     {
-        var res=await getManager().getRepository(Servicio).findOne({where:{id:id}, relations:["idCiudadOrigen", "idCiudadDestino", "estadoServicio", "pagos", "pagos.idMedioPago","registroServicios","idTipoVehiculo","idCliente", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos", "idTipoServicio"]});
+        var res=await getManager().getRepository(Servicio).findOne({where:{id:id}, relations:["idCiudadOrigen", "idCiudadDestino","idCiudadOrigen.idDepartamento", "idCiudadDestino.idDepartamento", "estadoServicio", "pagos", "pagos.idMedioPago","registroServicios","idTipoVehiculo","idCliente", "idUsuario", "idUsuario.idPersona", "idUsuario.vehiculos", "idTipoServicio"]});
         return res;
     }
 

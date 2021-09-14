@@ -34,10 +34,10 @@ import { RelacionPesoVehiculo } from "./entities/RelacionPesoVehiculo";
 
 const dbConfig: ConnectionOptions = {
     type: "mssql",
-    host: "190.60.126.214",
+    host: "35.202.175.13",
     port: 1433,
     username: "sa",
-    password: "$lcs1648_*",
+    password: "$e4pp2020*",
     maxQueryExecutionTime:120000,
     database: "SurEnvios",
     schema: "dbo",

@@ -64,7 +64,8 @@ export class ClienteBusiness{
             currentUser.pushToken=perfil.pushToken==null?currentUser.pushToken:perfil.pushToken;
             currentUser.celular=perfil.celular==null?currentUser.celular:perfil.celular;
             currentUser.idTipoDocumento=perfil.idTipoDocumento==null?currentUser.idTipoDocumento:perfil.idTipoDocumento;
-            getManager().getRepository(Cliente).save(perfil);
+            currentUser.foto=perfil.foto==null?currentUser.foto:perfil.foto.split('-').join('+').split('.').join('=');
+            getManager().getRepository(Cliente).save(currentUser);
             return true;
         }
         else

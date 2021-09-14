@@ -68,6 +68,9 @@ export class Servicio {
   @Column("varchar", { name: "CompDirDestino", nullable: true, length: 200 })
   compDirDestino: string | null;
 
+  @Column({ type: "int", name: "Calificacion" })
+  calificacion: number;
+
   @OneToMany(() => Pago, (pago) => pago.idServicio)
   pagos: Pago[];
 
