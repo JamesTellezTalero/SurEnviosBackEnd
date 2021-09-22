@@ -9,12 +9,12 @@ import {
 } from "typeorm";
 import { Pago } from "./Pago";
 import { RegistroServicio } from "./RegistroServicio";
-import { EstadoServicio } from "./EstadoServicio";
-import { TipoServicio } from "./TipoServicio";
-import { Municipio } from "./Municipio";
 import { Cliente } from "./Cliente";
-import { Usuario } from "./Usuario";
 import { TipoVehiculo } from "./TipoVehiculo";
+import { Municipio } from "./Municipio";
+import { EstadoServicio } from "./EstadoServicio";
+import { Usuario } from "./Usuario";
+import { TipoServicio } from "./TipoServicio";
 import { UsuarioRequest } from "./UsuarioRequest";
 
 @Index("PK_Servicio", ["id"], { unique: true })
@@ -68,8 +68,11 @@ export class Servicio {
   @Column("varchar", { name: "CompDirDestino", nullable: true, length: 200 })
   compDirDestino: string | null;
 
-  @Column({ type: "int", name: "Calificacion" })
-  calificacion: number;
+  @Column("int", { name: "Calificacion", nullable: true })
+  calificacion: number | null;
+
+  @Column("varchar", { name: "OTP", nullable: true, length: 6 })
+  otp: string | null;
 
   @OneToMany(() => Pago, (pago) => pago.idServicio)
   pagos: Pago[];
@@ -80,13 +83,13 @@ export class Servicio {
   )
   registroServicios: RegistroServicio[];
 
-  @ManyToOne(() => EstadoServicio, (estadoServicio) => estadoServicio.servicios)
-  @JoinColumn([{ name: "EstadoServicio", referencedColumnName: "id" }])
-  estadoServicio: EstadoServicio;
+  @ManyToOne(() => Cliente, (cliente) => cliente.servicios)
+  @JoinColumn([{ name: "IdCliente", referencedColumnName: "id" }])
+  idCliente: Cliente;
 
-  @ManyToOne(() => TipoServicio, (tipoServicio) => tipoServicio.servicios)
-  @JoinColumn([{ name: "IdTipoServicio", referencedColumnName: "id" }])
-  idTipoServicio: TipoServicio;
+  @ManyToOne(() => TipoVehiculo, (tipoVehiculo) => tipoVehiculo.servicios)
+  @JoinColumn([{ name: "IdTipoVehiculo", referencedColumnName: "id" }])
+  idTipoVehiculo: TipoVehiculo;
 
   @ManyToOne(() => Municipio, (municipio) => municipio.servicios)
   @JoinColumn([{ name: "IdCiudadOrigen", referencedColumnName: "id" }])
@@ -96,17 +99,17 @@ export class Servicio {
   @JoinColumn([{ name: "IdCiudadDestino", referencedColumnName: "id" }])
   idCiudadDestino: Municipio;
 
-  @ManyToOne(() => Cliente, (cliente) => cliente.servicios)
-  @JoinColumn([{ name: "IdCliente", referencedColumnName: "id" }])
-  idCliente: Cliente;
+  @ManyToOne(() => EstadoServicio, (estadoServicio) => estadoServicio.servicios)
+  @JoinColumn([{ name: "EstadoServicio", referencedColumnName: "id" }])
+  estadoServicio: EstadoServicio;
 
   @ManyToOne(() => Usuario, (usuario) => usuario.servicios)
   @JoinColumn([{ name: "IdUsuario", referencedColumnName: "id" }])
   idUsuario: Usuario;
 
-  @ManyToOne(() => TipoVehiculo, (tipoVehiculo) => tipoVehiculo.servicios)
-  @JoinColumn([{ name: "IdTipoVehiculo", referencedColumnName: "id" }])
-  idTipoVehiculo: TipoVehiculo;
+  @ManyToOne(() => TipoServicio, (tipoServicio) => tipoServicio.servicios)
+  @JoinColumn([{ name: "IdTipoServicio", referencedColumnName: "id" }])
+  idTipoServicio: TipoServicio;
 
   @OneToMany(
     () => UsuarioRequest,

@@ -217,7 +217,7 @@ export class ServicioBusiness
 
     async GetServiciosByCliente(idCliente:number):Promise<Servicio[]>
     {
-        var res = await getManager().query(`SELECT 
+        var res = await getManager().query(`SELECT top 15
         s.Id, 
         s.DireccionOrigen, 
         s.CompDirOrigen,

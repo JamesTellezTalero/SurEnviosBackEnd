@@ -19,6 +19,7 @@ import { Perfil } from "../entities/Perfil";
 import { TipoServicio } from "../entities/TipoServicio";
 import { Vehiculo } from "../entities/Vehiculo";
 import { TipoVehiculo } from "../entities/TipoVehiculo";
+var otpGenerator = require("otp-generator");
 
 export class SocketBusiness extends EventEmitter
 {
@@ -175,6 +176,8 @@ export class SocketBusiness extends EventEmitter
             console.log("in if");
             servicio.estadoServicio=aceptado;
             servicio.idUsuario=usuario;
+            var value=otpGenerator.generate(6,{alphabets:false, upperCase: false, specialChars: false})
+            servicio.otp=value;
             if(servicio.idTipoVehiculo==null && usuario.vehiculos.length!=0)
             {
                 servicio.idTipoVehiculo=usuario.vehiculos[0].idTipoVehiculo;
@@ -187,7 +190,7 @@ export class SocketBusiness extends EventEmitter
             domReq = await getManager().getRepository(UsuarioRequest).save(domReq);
             response={ idServicio:idServicio, asignado:true, mensaje:"El Servicio ha sido asignado. Por favor diríjase al sitio de recogida."};
             var subTitle:string = "Tu Solicitud de servicio ha sido aceptado";
-            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " +usuario.idPersona.apellidos + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa + ". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
+            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " +usuario.idPersona.apellidos + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa + ". Tu código de seguridad es el "+servicio.otp+". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
             this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "take");
             sm.type=TypeResponse.Ok;
             sendResponse=true;
