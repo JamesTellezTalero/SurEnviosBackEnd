@@ -233,14 +233,15 @@ export class ServicioBusiness
         d2.Id idDeptoDestino,
         d2.Nombre nombreDeptoDestino,
         es.Id idEstado,
-        es.Nombre Estado 
+        es.Nombre Estado,
+		s.otp
         from servicio s
         inner join Municipio m1 on s.IdCiudadOrigen = m1.Id 
         inner join Departamento d1 on m1.IdDepartamento = d1.Id 
         inner join Municipio m2 on s.IdCiudadDestino = m2.Id 
         inner join Departamento d2 on m2.IdDepartamento = d2.Id 
         inner join EstadoServicio es on s.EstadoServicio = es.Id 
-        where IdCliente = ` + idCliente);
+        where IdCliente = ` + idCliente +` order by FechaSolicitud DESC`);
         var servicios:Servicio[]=new Array(0);
         res.forEach(e => {
             var s:Servicio=new Servicio();
@@ -265,6 +266,7 @@ export class ServicioBusiness
             s.estadoServicio=new EstadoServicio();
             s.estadoServicio.id=e.idEstado;
             s.estadoServicio.nombre=e.Estado;
+			s.otp=e.otp;
             servicios.push(s);
         });
             //var servicios=await getManager().getRepository(Servicio).find({where:{idCliente:idCliente }});//, relations:["idCliente", "idCiudadOrigen", "idCiudadDestino","idCiudadOrigen.idDepartamento", "idCiudadDestino.idDepartamento", "estadoServicio"]});
