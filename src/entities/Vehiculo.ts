@@ -37,6 +37,9 @@ export class Vehiculo {
   @Column("varchar", { name: "Modelo", nullable: true, length: 10 })
   modelo: string | null;
 
+  @Column("ntext", { name: "Foto", nullable: true })
+  foto: string | null;
+
   @OneToMany(
     () => TripulanteVehiculo,
     (tripulanteVehiculo) => tripulanteVehiculo.idVehiculo2

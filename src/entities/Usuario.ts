@@ -8,6 +8,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { SeguridadSocial } from "./SeguridadSocial";
 import { Servicio } from "./Servicio";
 import { Persona } from "./Persona";
 import { Perfil } from "./Perfil";
@@ -39,6 +40,16 @@ export class Usuario {
   @jsonMember
   @Column("varchar", { name: "XueUserCode", nullable: true, length: 100 })
   xueUserCode: string | null;
+
+  @jsonMember
+  @Column("varchar", { name: "Cod_Regional", nullable: true, length: 100 })
+  codRegional: string | null;
+
+  @OneToMany(
+    () => SeguridadSocial,
+    (seguridadSocial) => seguridadSocial.idUsuario
+  )
+  seguridadSocials: SeguridadSocial[];
 
   @OneToMany(() => Servicio, (servicio) => servicio.idUsuario)
   servicios: Servicio[];

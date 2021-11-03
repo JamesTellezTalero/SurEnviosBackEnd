@@ -190,7 +190,10 @@ export class SocketBusiness extends EventEmitter
             domReq = await getManager().getRepository(UsuarioRequest).save(domReq);
             response={ idServicio:idServicio, asignado:true, mensaje:"El Servicio ha sido asignado. Por favor diríjase al sitio de recogida."};
             var subTitle:string = "Tu Solicitud de servicio ha sido aceptado";
-            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " +usuario.idPersona.apellidos + " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa + ". Tu código de seguridad es el "+servicio.otp+". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
+            var vehicleData:string = "";
+            if(servicio.idTipoVehiculo != null)
+                vehicleData = " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa;
+            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " + usuario.idPersona.apellidos + vehicleData + ". Tu código de seguridad es el "+servicio.otp+". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
             this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "take");
             sm.type=TypeResponse.Ok;
             sendResponse=true;
@@ -228,7 +231,10 @@ export class SocketBusiness extends EventEmitter
             servicio= await getManager().getRepository(Servicio).save(servicio);
             response={ idPedido:idPedido, asignado:true, mensaje:"Por favor diríjase al sitio de entrega."};
             var subTitle:string = "Tu Servicio va en camino";
-            var messageText:string = "Tu Servicio va en camino llevado por "+usuario.idPersona.nombres+ + " en un vehículo tipo "+ servicio.idTipoVehiculo.nombre+" de placas "+usuario.vehiculos[0].placa+". Dentro de poco estará llegando a tu dirección con tu solicitud.";
+            var vehicleData:string = "";
+            if(servicio.idTipoVehiculo != null)
+                vehicleData = " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa;
+            var messageText:string = "Tu Servicio va en camino llevado por "+usuario.idPersona.nombres + vehicleData + ". Dentro de poco estará llegando a tu dirección con tu solicitud.";
             this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText,"pickup");
             sm.type=TypeResponse.Ok;
         }

@@ -31,10 +31,12 @@ import { UsuarioRequest } from "./entities/UsuarioRequest";
 import { SubCategoriaVehiculo } from "./entities/SubCategoriaVehiculo";
 import { DireccionCliente } from "./entities/DireccionCliente";
 import { RelacionPesoVehiculo } from "./entities/RelacionPesoVehiculo";
+import { Noticias } from "./entities/Noticias";
+import { SeguridadSocial } from "./entities/SeguridadSocial";
 
 const dbConfig: ConnectionOptions = {
     type: "mssql",
-    host: "35.202.175.13",
+    host: "34.134.68.154",
     port: 1433,
     username: "sa",
     password: "$e4pp2020*",
@@ -49,6 +51,7 @@ const dbConfig: ConnectionOptions = {
       ElementoRegistro,
       EstadoServicio,
       Municipio,
+      Noticias,
       Pago,
       Parametros,
       Perfil,
@@ -58,6 +61,7 @@ const dbConfig: ConnectionOptions = {
       Regional,
       RegistroServicio,
       RelacionPesoVehiculo,
+      SeguridadSocial,
       Servicio,
       SubCategoriaVehiculo,
       TipoDocumento,

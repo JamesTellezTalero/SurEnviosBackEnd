@@ -1276,6 +1276,21 @@ app.post('/SendSocketPedido', async(req, res)=>{
     res.send("enviado!");
 });
 
+app.post('/ConsultarGuiaWTP', async(req,res)=>{
+    //console.log(req.body);
+    var request = req.body;
+    XueB.ConsultarGuia(request).then(result=>{
+        var data = {
+            data:[
+                {
+                    message: result
+                }
+            ]
+        }
+        res.send(data);
+    });
+});
+
 app.listen(port, () => {
     console.log('Ready on port '+port+'!');
 });
