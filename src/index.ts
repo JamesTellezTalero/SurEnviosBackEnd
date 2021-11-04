@@ -29,6 +29,7 @@ import { XueServiceBusiness } from './business/XueServicesBusiness';
 import { XueServiceRequest } from './models/XueServiceRequest';
 import { DireccionRequest } from './models/DireccionRequest';
 import { DireccionCliente } from './entities/DireccionCliente';
+import { UploadFotoRequest } from './models/UploadFotoRequest';
 
 const ClienteB = new ClienteBusiness();
 const UsuarioB = new UsuarioBusiness();
@@ -575,6 +576,46 @@ app.post('/CreateUsuario', async(req, res)=>{
         else
         {
             response.Message="No se pudo crear el perfíl de usuario";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/UploadFotoDocumento', async(req, res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(UploadFotoRequest);
+        var usrReq=serializer.parse(req.body);
+        if(usrReq!=null)
+        {
+            var newImg = await UsuarioB.UploadFotoDocumento(usrReq.img, usrReq.imgName, usrReq.IdTipoDoc, usrReq.IdUsuario);
+            if(newImg!=null)
+            {
+                response.Message="Imagen subida exitosamente";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(newImg);
+            }
+            else
+            {
+                response.Message="No fue posible subir la imagen";
+                response.Type=TypeResponse.Error;
+                response.Value=null;
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="No fue posible subir la imagen";
             response.Type=TypeResponse.Error;
             response.Value=null;
         }

@@ -19,6 +19,7 @@ import { UsuarioPos } from "../entities/UsuarioPos";
 import axios from "axios";
 import { GoogleMapsResponse } from "../entities/GoogleMapsResponse";
 import { Departamento } from "../entities/Departamento";
+import { Parametros } from "../entities/Parametros";
 
 export class ServicioBusiness
 {
@@ -154,13 +155,20 @@ export class ServicioBusiness
 
     async AddElementoRegistro(elemento:ElementoRegistroRequest):Promise<ElementoRegistro>
     {
+        var parametro=await getManager().getRepository(Parametros).findOne({where:{parametro:"pathImages"}})
+        var path="";
+        if(parametro!=null)
+        {
+            path=parametro.value;
+        }
         var registro=await getManager().getRepository(RegistroServicio).findOne({where:{id:elemento.IdRegistroServicio}});
         var tipoElemento=await getManager().getRepository(TipoElementoRegistro).findOne({where:{id:elemento.IdTipoElemento}});
         var newElemento:ElementoRegistro =new ElementoRegistro();
         newElemento.idRegistroServicio=registro;
         newElemento.idTipoElemento=tipoElemento;
-        var filename='img'+registro.id+'-'+Date.now()+'.jpg';
-        writeFileSync(filename, elemento.elemento.split('-').join('+').split('.').join('='));
+        var filename=path+'img'+registro.id+'-'+Date.now()+'.jpg';
+        let buff = new Buffer(elemento.elemento.split('-').join('+').split('.').join('='), 'base64');  
+        writeFileSync(filename, buff);
         newElemento.elemento=filename;
         newElemento=await getManager().getRepository(ElementoRegistro).save(newElemento);
         return newElemento;

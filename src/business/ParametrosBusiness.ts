@@ -11,6 +11,8 @@ import { Parametros } from "../models/Parametros";
 import { Parametros as Params } from "../entities/Parametros";
 import { TipoElementoRegistro } from "../entities/TipoElementoRegistro";
 import { TipoServicio } from "../entities/TipoServicio";
+import { EstadoUsuario } from "../entities/EstadoUsuario";
+import { TipoDocUsuario } from "../entities/TipoDocUsuario";
 
 export class ParametrosBusiness
 {
@@ -20,8 +22,10 @@ export class ParametrosBusiness
         parametros.ciudades=await getManager().getRepository(Municipio).find({relations:["idDepartamento", "regional"]});
         parametros.departamentos=await getManager().getRepository(Departamento).find();
         parametros.estadosServicio=await getManager().getRepository(EstadoServicio).find();
+        parametros.estadosUsuario=await getManager().getRepository(EstadoUsuario).find();
         parametros.categoriasVehiculo=await getManager().getRepository(CategoriaVehiculo).find({relations:["subCategoriaVehiculos","subCategoriaVehiculos.tipoVehiculos", "subCategoriaVehiculos.tipoVehiculos.relacionPesoVehiculos"]});
         parametros.tiposDocumento=await getManager().getRepository(TipoDocumento).find();
+        parametros.tiposDocUsuario=await getManager().getRepository(TipoDocUsuario).find();
         parametros.tiposVinculacion=await getManager().getRepository(TipoVinculacion).find();
         parametros.tiposTripulante=await getManager().getRepository(TipoTripulante).find();
         parametros.tiposPago=await getManager().getRepository(TipoPago).find();

@@ -9,6 +9,8 @@ import { TipoVinculacion } from "../entities/TipoVinculacion";
 import { Parametros as Params } from "../entities/Parametros";
 import { TipoElementoRegistro } from "../entities/TipoElementoRegistro";
 import { TipoServicio } from "../entities/TipoServicio";
+import { EstadoUsuario } from "../entities/EstadoUsuario";
+import { TipoDocUsuario } from "../entities/TipoDocUsuario";
 
 export class Parametros
 {
@@ -18,9 +20,13 @@ export class Parametros
 
     estadosServicio:EstadoServicio[];
 
+    estadosUsuario:EstadoUsuario[];
+
     categoriasVehiculo:CategoriaVehiculo[];
 
     tiposDocumento:TipoDocumento[];
+
+    tiposDocUsuario:TipoDocUsuario[];
 
     tiposVinculacion:TipoVinculacion[];
 

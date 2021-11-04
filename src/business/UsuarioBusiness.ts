@@ -1,8 +1,12 @@
 import { createHash } from "crypto";
 import { getManager } from "typeorm";
+import { FotoDocumento } from "../entities/FotoDocumento";
+import { Parametros } from "../entities/Parametros";
+import { TipoDocUsuario } from "../entities/TipoDocUsuario";
 import { Usuario } from "../entities/Usuario";
 import { UsuarioPos } from "../entities/UsuarioPos";
 import { EmailBusiness } from "./EmailBusiness";
+import { writeFile, writeFileSync  } from 'fs';
 
 export class UsuarioBusiness
 {
@@ -12,24 +16,24 @@ export class UsuarioBusiness
                 userName:Email,
                 password:Clave
             },
-            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento","idPerfil"]
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento","idPerfil", "idEstadoUsuario"]
         });
         return data;
     }
 
     async CreatePerfil(newUser:Usuario):Promise<Usuario>
     {
-        var exist = await getManager().getRepository(Usuario).findOne({where : {email : newUser.userName}});
+        var exist = await getManager().getRepository(Usuario).findOne({where : {userName : newUser.userName}});
         if(exist!=null)
             return null;
-        var data = getManager().getRepository(Usuario).save(newUser);
-        return data;
+        var data = await getManager().getRepository(Usuario).save(newUser);
+        return this.GetPerfil(data.id);
     }
 
     GetPerfil(Id:number):Promise<Usuario> { 
         var data = getManager().getRepository(Usuario).findOne({
             where:{id:Id},
-            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento", "idPerfil"]
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento", "idPerfil", "idEstadoUsuario"]
         });
         return data;
     }
@@ -49,6 +53,26 @@ export class UsuarioBusiness
         }
         else
             return false;
+    }
+
+    async UploadFotoDocumento(img:string, imgName:string, idTipoDoc:number, idUsuario:number)
+    {
+        var parametro=await getManager().getRepository(Parametros).findOne({where:{parametro:"pathImages"}})
+        var path="";
+        if(parametro!=null)
+        {
+            path=parametro.value;
+        }
+        var fotoDocumento:FotoDocumento=new FotoDocumento();
+        fotoDocumento.filename=imgName;
+        fotoDocumento.idTipo=await getManager().getRepository(TipoDocUsuario).findOne({where:{id:idTipoDoc}});
+        fotoDocumento.idUsuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}});
+        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+Date.now()+'.jpg';
+        var imagen=img.split('-').join('+').split('.').join('=');
+        let buff = new Buffer(imagen, 'base64');  
+        writeFileSync(filename, buff);
+        fotoDocumento=await getManager().getRepository(FotoDocumento).save(fotoDocumento);
+        return fotoDocumento;
     }
 
     UpdatePassword(Id:number, NewPassword:string) {

@@ -8,9 +8,11 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { FotoDocumento } from "./FotoDocumento";
 import { SeguridadSocial } from "./SeguridadSocial";
 import { Servicio } from "./Servicio";
 import { Persona } from "./Persona";
+import { EstadoUsuario } from "./EstadoUsuario";
 import { Perfil } from "./Perfil";
 import { UsuarioPos } from "./UsuarioPos";
 import { UsuarioRequest } from "./UsuarioRequest";
@@ -45,6 +47,9 @@ export class Usuario {
   @Column("varchar", { name: "Cod_Regional", nullable: true, length: 100 })
   codRegional: string | null;
 
+  @OneToMany(() => FotoDocumento, (fotoDocumento) => fotoDocumento.idUsuario)
+  fotoDocumentos: FotoDocumento[];
+
   @OneToMany(
     () => SeguridadSocial,
     (seguridadSocial) => seguridadSocial.idUsuario
@@ -57,6 +62,10 @@ export class Usuario {
   @ManyToOne(() => Persona, (persona) => persona.usuarios)
   @JoinColumn([{ name: "IdPersona", referencedColumnName: "id" }])
   idPersona: Persona;
+
+  @ManyToOne(() => EstadoUsuario, (estadoUsuario) => estadoUsuario.usuarios)
+  @JoinColumn([{ name: "IdEstadoUsuario", referencedColumnName: "id" }])
+  idEstadoUsuario: EstadoUsuario;
 
   @ManyToOne(() => Perfil, (perfil) => perfil.usuarios)
   @JoinColumn([{ name: "IdPerfil", referencedColumnName: "id" }])

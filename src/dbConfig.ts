@@ -33,6 +33,9 @@ import { DireccionCliente } from "./entities/DireccionCliente";
 import { RelacionPesoVehiculo } from "./entities/RelacionPesoVehiculo";
 import { Noticias } from "./entities/Noticias";
 import { SeguridadSocial } from "./entities/SeguridadSocial";
+import { EstadoUsuario } from "./entities/EstadoUsuario";
+import { FotoDocumento } from "./entities/FotoDocumento";
+import { TipoDocUsuario } from "./entities/TipoDocUsuario";
 
 const dbConfig: ConnectionOptions = {
     type: "mssql",
@@ -50,6 +53,8 @@ const dbConfig: ConnectionOptions = {
       DireccionCliente,
       ElementoRegistro,
       EstadoServicio,
+      EstadoUsuario,
+      FotoDocumento,
       Municipio,
       Noticias,
       Pago,
@@ -65,6 +70,7 @@ const dbConfig: ConnectionOptions = {
       Servicio,
       SubCategoriaVehiculo,
       TipoDocumento,
+      TipoDocUsuario,
       TipoElementoRegistro,
       TipoPago,
       TipoServicio,
