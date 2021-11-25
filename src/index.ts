@@ -1,3 +1,4 @@
+import * as dotenv from 'dotenv';
 import * as ws from 'ws';
 import * as express from 'express';
 import "reflect-metadata";
@@ -30,6 +31,9 @@ import { XueServiceRequest } from './models/XueServiceRequest';
 import { DireccionRequest } from './models/DireccionRequest';
 import { DireccionCliente } from './entities/DireccionCliente';
 import { UploadFotoRequest } from './models/UploadFotoRequest';
+import { VehiculoRequest } from './models/VehiculoRequest';
+
+dotenv.config({ path: __dirname+'/.env' });
 
 const ClienteB = new ClienteBusiness();
 const UsuarioB = new UsuarioBusiness();
@@ -225,6 +229,46 @@ app.post('/CreateCliente', async(req, res)=>{
         else
         {
             response.Message="No se pudo crear el perfíl de usuario";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/CrearVehiculo', async(req,res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(VehiculoRequest);
+        var usrReq=serializer.parse(req.body);
+        if(usrReq!=null)
+        {
+            var newUser = await VehiculoB.CreateVehiculo(usrReq.Vehiculo);
+            if(newUser!=null)
+            {
+                response.Message="Vehículo creado exitosamente";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(newUser);
+            }
+            else
+            {
+                response.Message="El correo vehículo ya se encuentra registrado";
+                response.Type=TypeResponse.Error;
+                response.Value=null;
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="No se pudo crear el registro del vehículo";
             response.Type=TypeResponse.Error;
             response.Value=null;
         }

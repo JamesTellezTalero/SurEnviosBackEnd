@@ -13,6 +13,7 @@
       "axios": "^0.21.1",
       "crypto": "^1.0.1",
       "express": "^4.17.1",
+      "googleapis": "^91.0.0",
       "mssql": "^4.0.4",
       "nodemailer": "^6.4.17",
       "otp-generator": "^2.0.1",

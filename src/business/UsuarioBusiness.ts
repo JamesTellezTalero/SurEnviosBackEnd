@@ -7,6 +7,7 @@ import { Usuario } from "../entities/Usuario";
 import { UsuarioPos } from "../entities/UsuarioPos";
 import { EmailBusiness } from "./EmailBusiness";
 import { writeFile, writeFileSync  } from 'fs';
+import { Persona } from "../entities/Persona";
 
 export class UsuarioBusiness
 {
@@ -46,7 +47,7 @@ export class UsuarioBusiness
             currentUser.userName=perfil.userName==null?currentUser.userName:perfil.userName;
             currentUser.password=perfil.password==null?currentUser.password:perfil.password;
             currentUser.xueUserCode=perfil.xueUserCode==null?currentUser.xueUserCode:perfil.xueUserCode;
-            currentUser.activo=perfil.activo==null?currentUser.activo:perfil.activo;
+            //currentUser.activo=perfil.activo==null?currentUser.activo:perfil.activo;
             currentUser.idPersona=perfil.idPersona==null?currentUser.idPersona:perfil.idPersona;
             getManager().getRepository(Usuario).save(perfil);
             return true;
@@ -88,14 +89,14 @@ export class UsuarioBusiness
 
     async RecoverPassword(Email:string):Promise<boolean>
     {
-        var exist = await getManager().getRepository(Usuario).findOne({where : {email : Email}, relations:["idPersona"]});
-        if(exist)
+        var exist = await getManager().getRepository(Persona).findOne({where : {email : Email}, relations:["usuarios"]});
+        if(exist!= null && exist.usuarios.length==1)
         {
             var newPwd=this.MakePwd(10);
-            exist.password=createHash('md5').update(newPwd).digest("hex");
-            getManager().getRepository(Usuario).save(exist);
-            var message=""+exist.idPersona.nombres+"\n\r A continuación le enviamos su nueva contraseña: \n\r"+newPwd;
-            new EmailBusiness().SendMail(exist.idPersona.email,"Recuperación de contraseña",message);
+            exist.usuarios[0].password=createHash('md5').update(newPwd).digest("hex");
+            getManager().getRepository(Usuario).save(exist.usuarios[0]);
+            var message=""+exist.nombres+"\n\r A continuación le enviamos su nueva contraseña: \n\r"+newPwd;
+            new EmailBusiness().SendMail(exist.email,"Recuperación de contraseña",message);
             return true;
         }
         else

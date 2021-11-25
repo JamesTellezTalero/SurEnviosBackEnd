@@ -42,7 +42,16 @@ export class VehiculoBusiness
             relations:["idTipoVehiculo","idTipoVinculacion","propietario","UsuarioPos","tripulantes"]
         });
         return Vehiculo;
-    }    
+    } 
+    
+    async CreateVehiculo(newVehiculo:Vehiculo)
+    {
+        var exist = await getManager().getRepository(Vehiculo).findOne({where : {placa : newVehiculo.placa}});
+        if(exist!=null)
+            return null;
+        var data = await getManager().getRepository(Vehiculo).save(newVehiculo);
+        return this.GetVehiculoById(data.id);
+    }
 
     
 }

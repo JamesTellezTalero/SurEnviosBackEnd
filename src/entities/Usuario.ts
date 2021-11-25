@@ -35,9 +35,9 @@ export class Usuario {
   @Column("varchar", { name: "UserName", nullable: true, length: 100 })
   userName: string | null;
 
-  @jsonMember
-  @Column("bit", { name: "Activo", default: () => "(0)" })
-  activo: boolean;
+  //@jsonMember
+  //@Column("bit", { name: "Activo", default: () => "(0)" })
+  //activo: boolean;
 
   @jsonMember
   @Column("varchar", { name: "XueUserCode", nullable: true, length: 100 })
