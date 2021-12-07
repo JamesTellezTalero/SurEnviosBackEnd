@@ -1,5 +1,7 @@
 import * as fs from "fs";
 import * as pdf from "pdf-creator-node";
+import { getManager } from "typeorm";
+import { Parametros } from "../entities/Parametros";
 import { XueService } from "../models/XueService";
 import { EmailBusiness } from "./EmailBusiness";
 
@@ -9,7 +11,13 @@ export class XueServiceBusiness
 {
     async CreatePdf(servicio:XueService, emailRemitente:string, emailDestinatario:string)
     {
-        var filepath="./"+servicio.NGuiaP+".pdf";
+      var parametro=await getManager().getRepository(Parametros).findOne({where:{parametro:"pathImages"}})
+        var path="";
+        if(parametro!=null)
+        {
+            path=parametro.value;
+        }
+        var filepath=path+servicio.NGuiaP+".pdf";
         var emailB=new EmailBusiness();
         var html=fs.readFileSync(__dirname+"/../templates/pdfTemplate.html","utf8");
         var options = {
