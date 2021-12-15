@@ -13,6 +13,7 @@ import { TipoElementoRegistro } from "../entities/TipoElementoRegistro";
 import { TipoServicio } from "../entities/TipoServicio";
 import { EstadoUsuario } from "../entities/EstadoUsuario";
 import { TipoDocUsuario } from "../entities/TipoDocUsuario";
+import { Perfil } from "../entities/Perfil";
 
 export class ParametrosBusiness
 {
@@ -31,6 +32,7 @@ export class ParametrosBusiness
         parametros.tiposPago=await getManager().getRepository(TipoPago).find();
         parametros.tiposElemento=await getManager().getRepository(TipoElementoRegistro).find();
         parametros.tiposServicio=await getManager().getRepository(TipoServicio).find();
+        parametros.perfiles=await getManager().getRepository(Perfil).find();
         parametros.parametros=await getManager().getRepository(Params).find();
         return parametros;
     }

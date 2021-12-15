@@ -59,14 +59,17 @@ export class Usuario {
   @OneToMany(() => Servicio, (servicio) => servicio.idUsuario)
   servicios: Servicio[];
 
+  @jsonMember(()=> Persona)
   @ManyToOne(() => Persona, (persona) => persona.usuarios)
   @JoinColumn([{ name: "IdPersona", referencedColumnName: "id" }])
   idPersona: Persona;
 
+  @jsonMember(()=> EstadoUsuario)
   @ManyToOne(() => EstadoUsuario, (estadoUsuario) => estadoUsuario.usuarios)
   @JoinColumn([{ name: "IdEstadoUsuario", referencedColumnName: "id" }])
   idEstadoUsuario: EstadoUsuario;
 
+  @jsonMember(()=> Perfil)
   @ManyToOne(() => Perfil, (perfil) => perfil.usuarios)
   @JoinColumn([{ name: "IdPerfil", referencedColumnName: "id" }])
   idPerfil: Perfil;

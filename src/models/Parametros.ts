@@ -11,6 +11,7 @@ import { TipoElementoRegistro } from "../entities/TipoElementoRegistro";
 import { TipoServicio } from "../entities/TipoServicio";
 import { EstadoUsuario } from "../entities/EstadoUsuario";
 import { TipoDocUsuario } from "../entities/TipoDocUsuario";
+import { Perfil } from "../entities/Perfil";
 
 export class Parametros
 {
@@ -39,5 +40,7 @@ export class Parametros
     tiposServicio:TipoServicio[];
 
     parametros:Params[];
+
+    perfiles:Perfil[];
 
 }

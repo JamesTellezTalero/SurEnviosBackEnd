@@ -8,6 +8,7 @@ import { UsuarioPos } from "../entities/UsuarioPos";
 import { EmailBusiness } from "./EmailBusiness";
 import { writeFile, writeFileSync  } from 'fs';
 import { Persona } from "../entities/Persona";
+import { Vehiculo } from "../entities/Vehiculo";
 
 export class UsuarioBusiness
 {
@@ -27,7 +28,17 @@ export class UsuarioBusiness
         var exist = await getManager().getRepository(Usuario).findOne({where : {userName : newUser.userName}});
         if(exist!=null)
             return null;
+            // se añaden las dos lineas de abajo como estan las tablas por llave foranea para que genere un idPersona y se lo añada a los parametros de usuario que va a insertar
+        var persona = await getManager().getRepository(Persona).save(newUser.idPersona)
+        newUser.idPersona=persona;
+        //hasta aqui
         var data = await getManager().getRepository(Usuario).save(newUser);
+        //para agregar en la tabla de vehiculos
+        newUser.vehiculos.forEach(async item =>{
+            item.idUsuario = newUser;
+            item = await getManager().getRepository(Vehiculo).save(item);
+        });
+        
         return this.GetPerfil(data.id);
     }
 
