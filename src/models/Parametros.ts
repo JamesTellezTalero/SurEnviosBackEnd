@@ -12,6 +12,7 @@ import { TipoServicio } from "../entities/TipoServicio";
 import { EstadoUsuario } from "../entities/EstadoUsuario";
 import { TipoDocUsuario } from "../entities/TipoDocUsuario";
 import { Perfil } from "../entities/Perfil";
+import { TipoVehiculo } from "../entities/TipoVehiculo";
 
 export class Parametros
 {
@@ -31,6 +32,8 @@ export class Parametros
 
     tiposVinculacion:TipoVinculacion[];
 
+    tiposVehiculo:TipoVehiculo[];
+
     tiposTripulante:TipoTripulante[];
 
     tiposPago:TipoPago[];
@@ -39,8 +42,8 @@ export class Parametros
 
     tiposServicio:TipoServicio[];
 
-    parametros:Params[];
-
     perfiles:Perfil[];
+
+    parametros:Params[];
 
 }

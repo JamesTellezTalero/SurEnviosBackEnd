@@ -18,7 +18,7 @@ export class UsuarioBusiness
                 userName:Email,
                 password:Clave
             },
-            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento","idPerfil", "idEstadoUsuario"]
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento","idPerfil", "idEstadoUsuario"]
         });
         return data;
     }
@@ -28,24 +28,20 @@ export class UsuarioBusiness
         var exist = await getManager().getRepository(Usuario).findOne({where : {userName : newUser.userName}});
         if(exist!=null)
             return null;
-            // se añaden las dos lineas de abajo como estan las tablas por llave foranea para que genere un idPersona y se lo añada a los parametros de usuario que va a insertar
-        var persona = await getManager().getRepository(Persona).save(newUser.idPersona)
+        var persona = await getManager().getRepository(Persona).save(newUser.idPersona);
         newUser.idPersona=persona;
-        //hasta aqui
         var data = await getManager().getRepository(Usuario).save(newUser);
-        //para agregar en la tabla de vehiculos
-        newUser.vehiculos.forEach(async item =>{
-            item.idUsuario = newUser;
+        newUser.vehiculos.forEach(async item => {
+            item.idUsuario=newUser;
             item = await getManager().getRepository(Vehiculo).save(item);
         });
-        
         return this.GetPerfil(data.id);
     }
 
     GetPerfil(Id:number):Promise<Usuario> { 
         var data = getManager().getRepository(Usuario).findOne({
             where:{id:Id},
-            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento", "idPerfil", "idEstadoUsuario"]
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento", "idPerfil", "idEstadoUsuario"]
         });
         return data;
     }

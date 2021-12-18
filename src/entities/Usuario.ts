@@ -17,7 +17,7 @@ import { Perfil } from "./Perfil";
 import { UsuarioPos } from "./UsuarioPos";
 import { UsuarioRequest } from "./UsuarioRequest";
 import { Vehiculo } from "./Vehiculo";
-import { jsonMember, jsonObject } from "typedjson";
+import { jsonArrayMember, jsonMember, jsonObject } from "typedjson";
 
 @jsonObject
 @Index("PK__Usuario__3214EC27564F70B9", ["id"], { unique: true })
@@ -83,6 +83,7 @@ export class Usuario {
   )
   usuarioRequests: UsuarioRequest[];
 
+  @jsonArrayMember(()=>Vehiculo)
   @OneToMany(() => Vehiculo, (vehiculo) => vehiculo.idUsuario)
   vehiculos: Vehiculo[];
 }
