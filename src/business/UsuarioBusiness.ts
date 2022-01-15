@@ -75,7 +75,7 @@ export class UsuarioBusiness
         fotoDocumento.filename=imgName;
         fotoDocumento.idTipo=await getManager().getRepository(TipoDocUsuario).findOne({where:{id:idTipoDoc}});
         fotoDocumento.idUsuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}});
-        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+Date.now()+'.jpg';
+        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+idTipoDoc+'-'+Date.now()+'.jpg';
         var imagen=img.split('-').join('+').split('.').join('=');
         let buff = new Buffer(imagen, 'base64');  
         writeFileSync(filename, buff);
