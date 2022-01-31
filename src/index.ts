@@ -825,12 +825,31 @@ app.post('/UpdateServicio', async(req, res)=>{
         var srvReq=serializer.parse(req.body);
         if(srvReq!=null)
         {
-            var newUser = await ServicioB.UpdateServicioCliente(srvReq.Servicio);
-            if(newUser!=null)
+            var service = await ServicioB.UpdateServicioCliente(srvReq.Servicio);
+            if(service!=null)
             {
                 response.Message="Servicio actualizado exitosamente";
                 response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(newUser);
+                response.Value=JSON.stringify(service);
+                SocketB.removeAllListeners();
+                if(service.estadoServicio.nombre=="Cancelado" || service.estadoServicio.nombre=="No Procesado")
+                {
+                    SocketB.on('CancelService', (idUser, servicio)=>{
+                        var myglobal:any = global;
+                        var item=myglobal.sockets.find(m=>m.idUsuario==idUser);
+                        if(item)
+                        {
+                            var sm:SocketModel=new SocketModel();
+                            sm.method="ServicioTaken";
+                            var param:SocketParameter= {key:"servicio", value:JSON.stringify(servicio)};
+                            sm.parameters=[param];
+                            var socket:ws = item.socket;
+                            if(socket.OPEN)
+                                item.socket.send(JSON.stringify(sm));
+                        }
+                    });
+                    SocketB.CancelService(service);
+                }
             }
             else
             {

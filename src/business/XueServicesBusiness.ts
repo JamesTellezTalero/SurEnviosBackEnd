@@ -65,7 +65,7 @@ export class XueServiceBusiness
         }
         var dateNow = new Date();
         var codKey = (dateNow.getFullYear() + dateNow.getMonth() + 1) * dateNow.getDate();
-        console.log(codKey);
+        //console.log(codKey);
         client.ImpGuia({ nGuia: request.senderMessage.trim(), xkey: codKey }, function (err, result, rawResponse, soapHeader, rawRequest) {
           if (err) {
             console.log("Entre al error de consumo");
@@ -75,7 +75,7 @@ export class XueServiceBusiness
             resolve("El numero de guía que ingreso no se encuentra en el sistema, Por favor verifique la información.");
           } else {
             var loQueNecesito = result.ImpGuiaResult.diffgram.NewDataSet.tbpsuper;
-            console.log(loQueNecesito);
+            //console.log(loQueNecesito);
             var string = `${request.senderName}, los detalles tú envío son:
 
 *Remitente:* ${loQueNecesito.Nom_Remitente}

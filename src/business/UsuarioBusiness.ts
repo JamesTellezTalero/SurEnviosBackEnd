@@ -145,6 +145,14 @@ export class UsuarioBusiness
     async GetUsuarioPos(id:number)
     {
         var curPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:id}});
+        if(curPos==null)
+        {
+            curPos=new UsuarioPos();
+            curPos.idUsuario=id;
+            curPos.lat = 0;
+            curPos.lon = 0;
+        }
+        curPos = await getManager().getRepository(UsuarioPos).save(curPos);
         return curPos;
     }
 }

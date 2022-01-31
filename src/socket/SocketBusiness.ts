@@ -173,7 +173,6 @@ export class SocketBusiness extends EventEmitter
         console.log("validando Servicio en estado solicitado y domiciliario nulo");
         if(servicio.estadoServicio.nombre=="Solicitado" && servicio.idUsuario==null)
         {
-            console.log("in if");
             servicio.estadoServicio=aceptado;
             servicio.idUsuario=usuario;
             var value=otpGenerator.generate(6,{alphabets:false, upperCase: false, specialChars: false})
@@ -301,7 +300,23 @@ export class SocketBusiness extends EventEmitter
 
     async CancelService(Servicio:Servicio)
     {
-        this.emit("CancelService",Servicio.id);
+        var domReqs=await getManager().getRepository(UsuarioRequest).find({where:{idServicio:Servicio.id}});
+        domReqs.forEach(async element => {
+            element.respuesta=4;
+            var domReq = await getManager().getRepository(UsuarioRequest).save(element);
+            var myglobal:any = global;                
+            var item=myglobal.sockets.find(m=>m.idUsuario==element.idUsuario);
+            if(item)
+            {
+                var sm:SocketModel=new SocketModel();
+                sm.method="ServicioTaken";
+                var param:SocketParameter = {key:"idServicio", value:Servicio.id.toString()};
+                sm.parameters=[param];
+                var socket:ws = item.socket;
+                if(socket.OPEN)
+                    item.socket.send(JSON.stringify(sm));
+            }
+        });
     }
 
     async SendCancelService(idPedido:number)
@@ -317,8 +332,8 @@ export class SocketBusiness extends EventEmitter
                 if(item)
                 {
                     var sm:SocketModel=new SocketModel();
-                    sm.method="PedidoTaken";
-                    var param:SocketParameter = {key:"idPedido", value:idPedido.toString()};
+                    sm.method="ServicioTaken";
+                    var param:SocketParameter = {key:"idServicio", value:idPedido.toString()};
                     sm.parameters=[param];
                     var socket:ws = item.socket;
                     if(socket.OPEN)
