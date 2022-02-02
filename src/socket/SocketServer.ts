@@ -28,7 +28,7 @@ export class SocketServer
             var ipAddress=req.socket.remoteAddress;
             ws.on('message', function (message) {
                 SocketServer.ProcessRequest(message, ws, ipAddress);
-            });
+            });
 
             ws.on('error', function(login){
                 console.log("recieved from login " +login);

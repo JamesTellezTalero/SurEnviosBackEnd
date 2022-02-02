@@ -203,6 +203,46 @@ app.post('/UpdatePushToken', async(req, res)=>{
     }
 });
 
+app.post('/CreateUsuario', async(req, res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(UsuarioRequest);
+        var usrReq=serializer.parse(req.body);
+        if(usrReq!=null)
+        {
+            var newUser = await UsuarioB.CreatePerfil(usrReq.Usuario);
+            if(newUser!=null)
+            {
+                response.Message="Perfil creado exitosamente";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(newUser);
+            }
+            else
+            {
+                response.Message="El nombre de usuario ya se encuentra registrado";
+                response.Type=TypeResponse.Error;
+                response.Value=null;
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="No se pudo crear el perfíl de usuario";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio "+error;
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
 app.post('/CreateCliente', async(req, res)=>{
     var response:Response=new Response();
     try
@@ -232,6 +272,46 @@ app.post('/CreateCliente', async(req, res)=>{
             response.Type=TypeResponse.Error;
             response.Value=null;
         }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/RecoverPasswordUsuario', async(req, res)=>{
+    var response:Response=new Response();
+    try
+    {
+        var serializer = new TypedJSON(RecoverRequest);
+        var recReq=serializer.parse(req.body);
+        if(recReq!=null)
+        {
+            var usuario = await UsuarioB.RecoverPassword(recReq.email);
+            if(usuario)
+            {
+                response.Message="Se ha enviado un correo electrónico con la nueva contraseña.";
+                response.Type=TypeResponse.Ok;
+                response.Value=null;
+            }
+            else
+            {
+                response.Message="El correo electrónico no está registrado en nuestra base de datos.";
+                response.Type=TypeResponse.Error;
+                response.Value=null
+            }
+        }
+        else
+        {
+            response.Message="Solicitud Incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+        }
+        res.send(response);
     }
     catch(error)
     {
@@ -593,47 +673,6 @@ app.post('/UpdateUsuario', async(req, res)=> {
     }
 });
 
-
-app.post('/CreateUsuario', async(req, res)=>{
-    var response:Response=new Response();
-    try
-    {
-        var serializer = new TypedJSON(UsuarioRequest);
-        var usrReq=serializer.parse(req.body);
-        if(usrReq!=null)
-        {
-            var newUser = await UsuarioB.CreatePerfil(usrReq.Usuario);
-            if(newUser!=null)
-            {
-                response.Message="Perfil creado exitosamente";
-                response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(newUser);
-            }
-            else
-            {
-                response.Message="El correo electrónico ya se encuentra registrado";
-                response.Type=TypeResponse.Error;
-                response.Value=null;
-            }
-            res.send(response);
-        }
-        else
-        {
-            response.Message="No se pudo crear el perfíl de usuario";
-            response.Type=TypeResponse.Error;
-            response.Value=null;
-        }
-    }
-    catch(error)
-    {
-        console.log(error);
-        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
-        response.Type=TypeResponse.Error;
-        response.Value=null;
-        res.send(response);
-    }
-});
-
 app.post('/UploadFotoDocumento', async(req, res)=>{
     var response:Response=new Response();
     try
@@ -693,46 +732,6 @@ app.post('/UpdatePwdUsuario', async(req,res)=>{
             else
             {
                 response.Message="La contraseña a cambiar no es la correcta";
-                response.Type=TypeResponse.Error;
-                response.Value=null
-            }
-        }
-        else
-        {
-            response.Message="Solicitud Incorrecta";
-            response.Type=TypeResponse.Error;
-            response.Value=null;
-        }
-        res.send(response);
-    }
-    catch(error)
-    {
-        console.log(error);
-        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
-        response.Type=TypeResponse.Error;
-        response.Value=null;
-        res.send(response);
-    }
-});
-
-app.post('/RecoverPasswordUsuario', async(req, res)=>{
-    var response:Response=new Response();
-    try
-    {
-        var serializer = new TypedJSON(RecoverRequest);
-        var recReq=serializer.parse(req.body);
-        if(recReq!=null)
-        {
-            var usuario = await UsuarioB.RecoverPassword(recReq.email);
-            if(usuario)
-            {
-                response.Message="Se ha enviado un correo electrónico con la nueva contraseña.";
-                response.Type=TypeResponse.Ok;
-                response.Value=null;
-            }
-            else
-            {
-                response.Message="El correo electrónico no está registrado en nuestra base de datos.";
                 response.Type=TypeResponse.Error;
                 response.Value=null
             }
@@ -826,12 +825,31 @@ app.post('/UpdateServicio', async(req, res)=>{
         var srvReq=serializer.parse(req.body);
         if(srvReq!=null)
         {
-            var newUser = await ServicioB.UpdateServicioCliente(srvReq.Servicio);
-            if(newUser!=null)
+            var service = await ServicioB.UpdateServicioCliente(srvReq.Servicio);
+            if(service!=null)
             {
                 response.Message="Servicio actualizado exitosamente";
                 response.Type=TypeResponse.Ok;
-                response.Value=JSON.stringify(newUser);
+                response.Value=JSON.stringify(service);
+                SocketB.removeAllListeners();
+                if(service.estadoServicio.nombre=="Cancelado" || service.estadoServicio.nombre=="No Procesado")
+                {
+                    SocketB.on('CancelService', (idUser, servicio)=>{
+                        var myglobal:any = global;
+                        var item=myglobal.sockets.find(m=>m.idUsuario==idUser);
+                        if(item)
+                        {
+                            var sm:SocketModel=new SocketModel();
+                            sm.method="ServicioTaken";
+                            var param:SocketParameter= {key:"servicio", value:JSON.stringify(servicio)};
+                            sm.parameters=[param];
+                            var socket:ws = item.socket;
+                            if(socket.OPEN)
+                                item.socket.send(JSON.stringify(sm));
+                        }
+                    });
+                    SocketB.CancelService(service);
+                }
             }
             else
             {

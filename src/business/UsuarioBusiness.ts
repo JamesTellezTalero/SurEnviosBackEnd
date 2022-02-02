@@ -8,6 +8,7 @@ import { UsuarioPos } from "../entities/UsuarioPos";
 import { EmailBusiness } from "./EmailBusiness";
 import { writeFile, writeFileSync  } from 'fs';
 import { Persona } from "../entities/Persona";
+import { Vehiculo } from "../entities/Vehiculo";
 
 export class UsuarioBusiness
 {
@@ -17,7 +18,7 @@ export class UsuarioBusiness
                 userName:Email,
                 password:Clave
             },
-            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento","idPerfil", "idEstadoUsuario"]
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento","idPerfil", "idEstadoUsuario"]
         });
         return data;
     }
@@ -27,14 +28,20 @@ export class UsuarioBusiness
         var exist = await getManager().getRepository(Usuario).findOne({where : {userName : newUser.userName}});
         if(exist!=null)
             return null;
+        var persona = await getManager().getRepository(Persona).save(newUser.idPersona);
+        newUser.idPersona=persona;
         var data = await getManager().getRepository(Usuario).save(newUser);
+        newUser.vehiculos.forEach(async item => {
+            item.idUsuario=newUser;
+            item = await getManager().getRepository(Vehiculo).save(item);
+        });
         return this.GetPerfil(data.id);
     }
 
     GetPerfil(Id:number):Promise<Usuario> { 
         var data = getManager().getRepository(Usuario).findOne({
             where:{id:Id},
-            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","vehiculos.propietario","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento", "idPerfil", "idEstadoUsuario"]
+            relations:["vehiculos","vehiculos.idTipoVehiculo","vehiculos.idTipoVinculacion","usuarioPos","vehiculos.tripulanteVehiculos","idPersona","idPersona.idTipoDocumento", "idPerfil", "idEstadoUsuario"]
         });
         return data;
     }
@@ -64,15 +71,21 @@ export class UsuarioBusiness
         {
             path=parametro.value;
         }
-        var fotoDocumento:FotoDocumento=new FotoDocumento();
+        var fotoDocumento = await getManager().getRepository(FotoDocumento).findOne({where:{idTipo:idTipoDoc, idUsuario:idUsuario}});
+        if(fotoDocumento == null)
+            fotoDocumento = new FotoDocumento();
+        
         fotoDocumento.filename=imgName;
         fotoDocumento.idTipo=await getManager().getRepository(TipoDocUsuario).findOne({where:{id:idTipoDoc}});
         fotoDocumento.idUsuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}});
-        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+Date.now()+'.jpg';
+        fotoDocumento=await getManager().getRepository(FotoDocumento).save(fotoDocumento);
+        
+        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+idTipoDoc+'-'+Date.now()+'.jpg';
         var imagen=img.split('-').join('+').split('.').join('=');
         let buff = new Buffer(imagen, 'base64');  
         writeFileSync(filename, buff);
-        fotoDocumento=await getManager().getRepository(FotoDocumento).save(fotoDocumento);
+        
+        
         return fotoDocumento;
     }
 
@@ -132,6 +145,14 @@ export class UsuarioBusiness
     async GetUsuarioPos(id:number)
     {
         var curPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:id}});
+        if(curPos==null)
+        {
+            curPos=new UsuarioPos();
+            curPos.idUsuario=id;
+            curPos.lat = 0;
+            curPos.lon = 0;
+        }
+        curPos = await getManager().getRepository(UsuarioPos).save(curPos);
         return curPos;
     }
 }

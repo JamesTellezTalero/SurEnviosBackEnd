@@ -17,7 +17,7 @@ import { Perfil } from "./Perfil";
 import { UsuarioPos } from "./UsuarioPos";
 import { UsuarioRequest } from "./UsuarioRequest";
 import { Vehiculo } from "./Vehiculo";
-import { jsonMember, jsonObject } from "typedjson";
+import { jsonArrayMember, jsonMember, jsonObject } from "typedjson";
 
 @jsonObject
 @Index("PK__Usuario__3214EC27564F70B9", ["id"], { unique: true })
@@ -59,14 +59,17 @@ export class Usuario {
   @OneToMany(() => Servicio, (servicio) => servicio.idUsuario)
   servicios: Servicio[];
 
+  @jsonMember(()=> Persona)
   @ManyToOne(() => Persona, (persona) => persona.usuarios)
   @JoinColumn([{ name: "IdPersona", referencedColumnName: "id" }])
   idPersona: Persona;
 
+  @jsonMember(()=> EstadoUsuario)
   @ManyToOne(() => EstadoUsuario, (estadoUsuario) => estadoUsuario.usuarios)
   @JoinColumn([{ name: "IdEstadoUsuario", referencedColumnName: "id" }])
   idEstadoUsuario: EstadoUsuario;
 
+  @jsonMember(()=> Perfil)
   @ManyToOne(() => Perfil, (perfil) => perfil.usuarios)
   @JoinColumn([{ name: "IdPerfil", referencedColumnName: "id" }])
   idPerfil: Perfil;
@@ -80,6 +83,7 @@ export class Usuario {
   )
   usuarioRequests: UsuarioRequest[];
 
+  @jsonArrayMember(()=>Vehiculo)
   @OneToMany(() => Vehiculo, (vehiculo) => vehiculo.idUsuario)
   vehiculos: Vehiculo[];
 }

@@ -19,6 +19,7 @@ import { Perfil } from "../entities/Perfil";
 import { TipoServicio } from "../entities/TipoServicio";
 import { Vehiculo } from "../entities/Vehiculo";
 import { TipoVehiculo } from "../entities/TipoVehiculo";
+import { Cliente } from "../entities/Cliente";
 var otpGenerator = require("otp-generator");
 
 export class SocketBusiness extends EventEmitter
@@ -169,50 +170,68 @@ export class SocketBusiness extends EventEmitter
         var aceptado=await getManager().getRepository(EstadoServicio).findOne({where:{nombre:"Aceptado"}});
         var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}, relations:["idPersona", "vehiculos", "vehiculos.idTipoVehiculo"]});
         var usuarioPos=await getManager().getRepository(UsuarioPos).findOne({where:{idUsuario:idUsuario}});
-        var servicio= await getManager().getRepository(Servicio).findOne({where:{id:idServicio}, relations:["estadoServicio","idCliente", "idTipoVehiculo"]});
-        console.log("validando Servicio en estado solicitado y domiciliario nulo");
-        if(servicio.estadoServicio.nombre=="Solicitado" && servicio.idUsuario==null)
-        {
-            console.log("in if");
-            servicio.estadoServicio=aceptado;
-            servicio.idUsuario=usuario;
-            var value=otpGenerator.generate(6,{alphabets:false, upperCase: false, specialChars: false})
-            servicio.otp=value;
-            if(servicio.idTipoVehiculo==null && usuario.vehiculos.length!=0)
+        await getManager().transaction( async transactionManager=>{
+            var servicio = await transactionManager.createQueryBuilder(Servicio,"servicio")
+            .setLock("pessimistic_read")
+            .leftJoinAndMapOne("servicio.estadoServicio",EstadoServicio,"estadoServicio","estadoServicio.id=servicio.estadoServicio")
+            .leftJoinAndMapOne("servicio.idCliente", Cliente,"idCliente","idCliente.id=servicio.idCliente")
+            .leftJoinAndMapOne("servicio.idTipoVehiculo",TipoVehiculo,"idTipoVehiculo","idTipoVehiculo.id=servicio.idTipoVehiculo")
+            .where("servicio.id = :idServicio", {idServicio:idServicio})
+            .getOne();
+            //var servicio= await getManager().getRepository(Servicio).findOne({where:{id:idServicio}, relations:["estadoServicio","idCliente", "idTipoVehiculo"], lock:{mode:'pessimistic_write'}});
+            console.log("validando Servicio en estado solicitado y domiciliario nulo");
+            if(servicio!=null)
             {
-                servicio.idTipoVehiculo=usuario.vehiculos[0].idTipoVehiculo;
+                if(servicio.estadoServicio.nombre=="Solicitado" && servicio.idUsuario==null)
+                {
+                    servicio.estadoServicio=aceptado;
+                    servicio.idUsuario=usuario;
+                    var value=otpGenerator.generate(6,{alphabets:false, upperCase: false, specialChars: false})
+                    servicio.otp=value;
+                    if(servicio.idTipoVehiculo==null && usuario.vehiculos.length!=0)
+                    {
+                        servicio.idTipoVehiculo=usuario.vehiculos[0].idTipoVehiculo;
+                    }
+                    //servicio= await getManager().getRepository(Servicio).save(servicio);
+                    servicio = await transactionManager.save(servicio);
+                    usuarioPos.enEntrega=true;
+                    getManager().getRepository(UsuarioPos).save(usuarioPos);
+                    var domReq = await getManager().getRepository(UsuarioRequest).findOne({where:{idUsuario:usuario.id, idServicio:idServicio}});
+                    domReq.respuesta=2;
+                    domReq = await getManager().getRepository(UsuarioRequest).save(domReq);
+                    response={ idServicio:idServicio, asignado:true, mensaje:"El Servicio ha sido asignado. Por favor diríjase al sitio de recogida."};
+                    var subTitle:string = "Tu Solicitud de servicio ha sido aceptado";
+                    var vehicleData:string = "";
+                    if(servicio.idTipoVehiculo != null)
+                        vehicleData = " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa;
+                    var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " + usuario.idPersona.apellidos + vehicleData + ". Tu código de seguridad es el "+servicio.otp+". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
+                    this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "take");
+                    sm.type=TypeResponse.Ok;
+                    sendResponse=true;
+                }
+                else
+                {
+                    console.log("in else");
+                    response={idServicio:idServicio, asignado:false, mensaje:"El Servicio ya ha sido tomado por otro domiciliario."};
+                    sm.type=TypeResponse.Error;
+                }
             }
-            servicio= await getManager().getRepository(Servicio).save(servicio);
-            usuarioPos.enEntrega=true;
-            getManager().getRepository(UsuarioPos).save(usuarioPos);
-            var domReq = await getManager().getRepository(UsuarioRequest).findOne({where:{idUsuario:usuario.id, idServicio:idServicio}});
-            domReq.respuesta=2;
-            domReq = await getManager().getRepository(UsuarioRequest).save(domReq);
-            response={ idServicio:idServicio, asignado:true, mensaje:"El Servicio ha sido asignado. Por favor diríjase al sitio de recogida."};
-            var subTitle:string = "Tu Solicitud de servicio ha sido aceptado";
-            var vehicleData:string = "";
-            if(servicio.idTipoVehiculo != null)
-                vehicleData = " en un vehículo tipo " + servicio.idTipoVehiculo.nombre + " de placas " + usuario.vehiculos[0].placa;
-            var messageText:string = "Tu servicio será atendido por "+ usuario.idPersona.nombres + " " + usuario.idPersona.apellidos + vehicleData + ". Tu código de seguridad es el "+servicio.otp+". Estaremos notificándote cuando se encuentre en camino para recoger el servicio.";
-            this.PushB.Notificar(servicio.idCliente.id, servicio.id, subTitle,messageText, "take");
-            sm.type=TypeResponse.Ok;
-            sendResponse=true;
-        }
-        else
-        {
-            console.log("in else");
-            response={idServicio:idServicio, asignado:false, mensaje:"El Servicio ya ha sido tomado por otro domiciliario."};
-            sm.type=TypeResponse.Error;
-        }
-        console.log("sending notify a otros domiciliarios");
-        this.emit("NotifyPedidoTaken",idServicio);
-        var param:SocketParameter={key:"response", value:JSON.stringify(response)};
-        sm.parameters=[param];
-        if(sendResponse)
-        {
-            console.log("enviando respuesta a domiciliario");
-            this.emit("ReplyRequest",sm);
-        }
+            else
+            {
+                console.log("in else");
+                response={idServicio:idServicio, asignado:false, mensaje:"El Servicio ya ha sido tomado por otro domiciliario."};
+                sm.type=TypeResponse.Error;
+            }
+            console.log("sending notify a otros domiciliarios");
+            this.emit("NotifyPedidoTaken",idServicio);
+            var param:SocketParameter={key:"response", value:JSON.stringify(response)};
+            sm.parameters=[param];
+            if(sendResponse)
+            {
+                console.log("enviando respuesta a domiciliario");
+                this.emit("ReplyRequest",sm);
+            }
+        });
     }
 
     async PickUpService(request:SocketModel)
@@ -301,7 +320,23 @@ export class SocketBusiness extends EventEmitter
 
     async CancelService(Servicio:Servicio)
     {
-        this.emit("CancelService",Servicio.id);
+        var domReqs=await getManager().getRepository(UsuarioRequest).find({where:{idServicio:Servicio.id}});
+        domReqs.forEach(async element => {
+            element.respuesta=4;
+            var domReq = await getManager().getRepository(UsuarioRequest).save(element);
+            var myglobal:any = global;                
+            var item=myglobal.sockets.find(m=>m.idUsuario==element.idUsuario);
+            if(item)
+            {
+                var sm:SocketModel=new SocketModel();
+                sm.method="ServicioTaken";
+                var param:SocketParameter = {key:"idServicio", value:Servicio.id.toString()};
+                sm.parameters=[param];
+                var socket:ws = item.socket;
+                if(socket.OPEN)
+                    item.socket.send(JSON.stringify(sm));
+            }
+        });
     }
 
     async SendCancelService(idPedido:number)
@@ -317,8 +352,8 @@ export class SocketBusiness extends EventEmitter
                 if(item)
                 {
                     var sm:SocketModel=new SocketModel();
-                    sm.method="PedidoTaken";
-                    var param:SocketParameter = {key:"idPedido", value:idPedido.toString()};
+                    sm.method="ServicioTaken";
+                    var param:SocketParameter = {key:"idServicio", value:idPedido.toString()};
                     sm.parameters=[param];
                     var socket:ws = item.socket;
                     if(socket.OPEN)

@@ -17,7 +17,7 @@ import { jsonMember, jsonObject } from "typedjson";
 @Index("PK_Cliente", ["id"], { unique: true })
 @Entity("Cliente", { schema: "dbo" })
 export class Cliente {
-  @jsonMember
+  @jsonMember //se añade la etiqueta jsonMember cuando te construye typeorm para que tenga acceso a leer y escribir sobre sus instancias
   @PrimaryGeneratedColumn({ type: "int", name: "Id" })
   id: number;
 

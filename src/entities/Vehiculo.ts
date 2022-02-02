@@ -56,10 +56,9 @@ export class Vehiculo {
   )
   tripulanteVehiculos: TripulanteVehiculo[];
 
-  @jsonMember(()=>Propietario)
-  @ManyToOne(() => Propietario, (propietario) => propietario.vehiculos)
-  @JoinColumn([{ name: "Propietario", referencedColumnName: "id" }])
-  propietario: Propietario;
+  @jsonMember
+  @Column("int", { name: "Propietario", nullable: true })
+  propietario: number | null;
 
   @jsonMember(()=>TipoVehiculo)
   @ManyToOne(() => TipoVehiculo, (tipoVehiculo) => tipoVehiculo.vehiculos)
