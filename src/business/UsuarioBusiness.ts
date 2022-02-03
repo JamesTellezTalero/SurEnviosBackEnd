@@ -48,7 +48,7 @@ export class UsuarioBusiness
 
     async UpdatePerfil(perfil:Usuario):Promise<boolean>
     {
-        var currentUser = await getManager().getRepository(Usuario).findOne({where:{ Id:perfil.id },relations:["idPersona"]});
+        var currentUser = await getManager().getRepository(Usuario).findOne({where:{ id:perfil.id },relations:["idPersona"]});
         if(currentUser!=null)
         {
             currentUser.userName=perfil.userName==null?currentUser.userName:perfil.userName;
