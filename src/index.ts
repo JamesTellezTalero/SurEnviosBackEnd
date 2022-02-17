@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as ws from 'ws';
 import * as express from 'express';
+import * as cors from 'cors';
 import "reflect-metadata";
 import { TypedJSON } from 'typedjson';
 import {createConnection} from "typeorm";
@@ -56,7 +57,8 @@ const app = express();
 
 app.use(bodyParser.json({limit: '50mb', extended: true}))
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
-
+app.use(cors());
+app.use('/public',express.static(process.env.FILE_PUBLIC_FOLDER))
 
 app.get('/',(req, res)=>{
     res.send('Welcome to SurEnvios BackEnd. Please refer to Server Administrator for get access to the services');
@@ -701,6 +703,46 @@ app.post('/UploadFotoDocumento', async(req, res)=>{
             response.Message="No fue posible subir la imagen";
             response.Type=TypeResponse.Error;
             response.Value=null;
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+        response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
+        response.Type=TypeResponse.Error;
+        response.Value=null;
+        res.send(response);
+    }
+});
+
+app.post('/GetDocumentosUsuario', async (req, res)=> {
+    var response:Response=new Response();
+    try{            
+        var serializer = new TypedJSON(UsuarioRequest);
+        var usrReq=serializer.parse(req.body);
+        if(usrReq!=null)
+        {
+            var usuario=await UsuarioB.GetFotosDocUsuario(usrReq.IdUsuario);
+            if(usuario!=null)
+            {
+                response.Message="";
+                response.Type=TypeResponse.Ok;
+                response.Value=JSON.stringify(usuario);
+            }
+            else
+            {
+                response.Message="No se encontró el usuario";
+                response.Type=TypeResponse.Error;
+                response.Value=null
+            }
+            res.send(response);
+        }
+        else
+        {
+            response.Message="Solicitud Incorrecta";
+            response.Type=TypeResponse.Error;
+            response.Value=null;
+            res.send(response);
         }
     }
     catch(error)

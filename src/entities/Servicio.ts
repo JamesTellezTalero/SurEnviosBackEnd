@@ -67,6 +67,9 @@ export class Servicio {
 
   @Column("varchar", { name: "CompDirDestino", nullable: true, length: 200 })
   compDirDestino: string | null;
+  
+  @Column("varchar", { name: "Destinatario", nullable: true, length: 200 })
+  destinatario: string | null;
 
   @Column("int", { name: "Calificacion", nullable: true })
   calificacion: number | null;

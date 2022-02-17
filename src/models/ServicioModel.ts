@@ -25,6 +25,9 @@ export class ServicioModel
     compDirDestino: string;
 
     @jsonMember
+    destinatario: string;
+
+    @jsonMember
     descripcionCarga: string;
 
     @jsonMember

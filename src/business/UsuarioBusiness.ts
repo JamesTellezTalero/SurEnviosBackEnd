@@ -71,16 +71,16 @@ export class UsuarioBusiness
         {
             path=parametro.value;
         }
+        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+idTipoDoc+'-'+Date.now()+'.jpg';
         var fotoDocumento = await getManager().getRepository(FotoDocumento).findOne({where:{idTipo:idTipoDoc, idUsuario:idUsuario}});
         if(fotoDocumento == null)
             fotoDocumento = new FotoDocumento();
         
-        fotoDocumento.filename=imgName;
+        fotoDocumento.filename=filename;
         fotoDocumento.idTipo=await getManager().getRepository(TipoDocUsuario).findOne({where:{id:idTipoDoc}});
         fotoDocumento.idUsuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}});
         fotoDocumento=await getManager().getRepository(FotoDocumento).save(fotoDocumento);
         
-        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+idTipoDoc+'-'+Date.now()+'.jpg';
         var imagen=img.split('-').join('+').split('.').join('=');
         let buff = new Buffer(imagen, 'base64');  
         writeFileSync(filename, buff);
@@ -154,5 +154,19 @@ export class UsuarioBusiness
         }
         curPos = await getManager().getRepository(UsuarioPos).save(curPos);
         return curPos;
+    }
+
+    async GetFotosDocUsuario(id:number)
+    {
+        var images = new Array();
+        var usrImages=await getManager().getRepository(FotoDocumento).find({where:{idUsuario:id}, relations:["idTipo"]});
+        for(var i=0; i<usrImages.length;i++)                
+        {
+            images.push({
+                imagen:"public/"+usrImages[i].filename,
+                tipo:usrImages[i].idTipo.nombre
+            });
+        }
+        return images;
     }
 }

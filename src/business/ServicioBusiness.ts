@@ -35,6 +35,7 @@ export class ServicioBusiness
         newServicio.direccionOrigen=servicio.direccionOrigen;
         newServicio.compDirOrigen=servicio.compDirOrigen;
         newServicio.direccionDestino=servicio.direccionDestino;
+        newServicio.destinatario=servicio.destinatario;
         newServicio.compDirDestino=servicio.compDirDestino;
         newServicio.idCiudadOrigen=servicio.idCiudadOrigen;
         newServicio.idCiudadDestino=servicio.idCiudadDestino;
@@ -79,6 +80,7 @@ export class ServicioBusiness
         currentService.compDirDestino=servicio.compDirDestino;
         currentService.idCiudadOrigen=servicio.idCiudadOrigen;
         currentService.idCiudadDestino=servicio.idCiudadDestino;
+        currentService.destinatario=servicio.destinatario;
         switch(servicio.estadoServicio.nombre)
         {
             case "Cancelado":
