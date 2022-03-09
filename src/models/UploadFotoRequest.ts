@@ -39,4 +39,28 @@ export class UploadFotoRequest
         }
     }
 
+    isValid()
+    {
+        var toReturn={ 
+            valid:true,
+            message:""
+        }
+        var valid:boolean=true;
+        if(this.img==null) 
+        {
+            toReturn.valid=false;
+            toReturn.message+="La imagen no puede ser vacia\n";
+        }
+        if(this.idTipoDoc==null || isNaN(parseInt(this.idTipoDoc)))   
+        {
+            toReturn.valid=false;
+            toReturn.message+="Debe incluir un tipo de documento válido\n";
+        }
+        else if(this.idUsuario==null || isNaN(parseInt(this.idUsuario)))
+        {
+            toReturn.valid=false;
+            toReturn.message+="Debe incluir un id de usuario válido\n";
+        }
+        return toReturn;
+    }
 }

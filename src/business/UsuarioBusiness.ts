@@ -71,14 +71,15 @@ export class UsuarioBusiness
         {
             path=parametro.value;
         }
-        var filename=path+'img'+fotoDocumento.idUsuario.id+'-'+idTipoDoc+'-'+Date.now()+'.jpg';
+        var usuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}});
+        var filename=path+'img'+usuario.id+'-'+idTipoDoc+'-'+Date.now()+'.jpg';
         var fotoDocumento = await getManager().getRepository(FotoDocumento).findOne({where:{idTipo:idTipoDoc, idUsuario:idUsuario}});
         if(fotoDocumento == null)
             fotoDocumento = new FotoDocumento();
         
         fotoDocumento.filename=filename;
         fotoDocumento.idTipo=await getManager().getRepository(TipoDocUsuario).findOne({where:{id:idTipoDoc}});
-        fotoDocumento.idUsuario=await getManager().getRepository(Usuario).findOne({where:{id:idUsuario}});
+        fotoDocumento.idUsuario=usuario;
         fotoDocumento=await getManager().getRepository(FotoDocumento).save(fotoDocumento);
         
         var imagen=img.split('-').join('+').split('.').join('=');

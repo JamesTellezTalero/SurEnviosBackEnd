@@ -681,7 +681,7 @@ app.post('/UploadFotoDocumento', async(req, res)=>{
     {
         var serializer = new TypedJSON(UploadFotoRequest);
         var usrReq=serializer.parse(req.body);
-        if(usrReq!=null)
+        if(usrReq!=null && usrReq.isValid().valid)
         {
             var newImg = await UsuarioB.UploadFotoDocumento(usrReq.img, usrReq.imgName, usrReq.IdTipoDoc, usrReq.IdUsuario);
             if(newImg!=null)
@@ -695,15 +695,15 @@ app.post('/UploadFotoDocumento', async(req, res)=>{
                 response.Message="No fue posible subir la imagen";
                 response.Type=TypeResponse.Error;
                 response.Value=null;
-            }
-            res.send(response);
+            }            
         }
         else
         {
-            response.Message="No fue posible subir la imagen";
+            response.Message="No fue posible subir la imagen.\n"+(usrReq != null ? JSON.stringify(usrReq.isValid()) :"");
             response.Type=TypeResponse.Error;
             response.Value=null;
         }
+        res.send(response);
     }
     catch(error)
     {
