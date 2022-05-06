@@ -68,6 +68,15 @@ export class Servicio {
   @Column("varchar", { name: "CompDirDestino", nullable: true, length: 200 })
   compDirDestino: string | null;
 
+  @Column("varchar", { name: "numDestinatario", nullable: true, length: 20 })
+  numdestinatario: string | null;
+
+  @Column("datetime", { name: "FechaInicial", nullable: true })
+  fechaInicial: Date | null;
+
+  @Column("datetime", { name: "FchaFinalAlquiler", nullable: true })
+  fechaFinal: Date | null;
+
   @Column("int", { name: "Calificacion", nullable: true })
   calificacion: number | null;
 
