@@ -35,13 +35,10 @@ export class ServicioBusiness
         newServicio.direccionOrigen=servicio.direccionOrigen;
         newServicio.compDirOrigen=servicio.compDirOrigen;
         newServicio.direccionDestino=servicio.direccionDestino;
-<<<<<<< Updated upstream
-=======
         newServicio.destinatario=servicio.destinatario;
         newServicio.numdestinatario=servicio.numdestinatario;
         newServicio.fechaInicial=servicio.fechaInicial;
         newServicio.fechaFinal=servicio.fechaFinal;
->>>>>>> Stashed changes
         newServicio.compDirDestino=servicio.compDirDestino;
         newServicio.idCiudadOrigen=servicio.idCiudadOrigen;
         newServicio.idCiudadDestino=servicio.idCiudadDestino;
@@ -86,13 +83,10 @@ export class ServicioBusiness
         currentService.compDirDestino=servicio.compDirDestino;
         currentService.idCiudadOrigen=servicio.idCiudadOrigen;
         currentService.idCiudadDestino=servicio.idCiudadDestino;
-<<<<<<< Updated upstream
-=======
         currentService.destinatario=servicio.destinatario;
         currentService.numdestinatario=servicio.numdestinatario;
         currentService.fechaInicial=servicio.fechaInicial;
         currentService.fechaFinal=servicio.fechaFinal;
->>>>>>> Stashed changes
         switch(servicio.estadoServicio.nombre)
         {
             case "Cancelado":

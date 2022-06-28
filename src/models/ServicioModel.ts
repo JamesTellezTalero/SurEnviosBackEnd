@@ -25,8 +25,6 @@ export class ServicioModel
     compDirDestino: string;
 
     @jsonMember
-<<<<<<< Updated upstream
-=======
     destinatario: string;
 
     @jsonMember
@@ -39,7 +37,6 @@ export class ServicioModel
     fechaFinal: Date;
 
     @jsonMember
->>>>>>> Stashed changes
     descripcionCarga: string;
 
     @jsonMember

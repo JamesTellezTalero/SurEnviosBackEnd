@@ -39,7 +39,7 @@ import { TipoDocUsuario } from "./entities/TipoDocUsuario";
 
 const dbConfig: ConnectionOptions = {
     type: "mssql",
-    host: "34.134.68.154",
+    host: "35.224.70.29",
     port: 1433,
     username: "sa",
     password: "$e4pp2020*",
