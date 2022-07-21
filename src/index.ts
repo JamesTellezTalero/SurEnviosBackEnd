@@ -33,6 +33,7 @@ import { DireccionRequest } from './models/DireccionRequest';
 import { DireccionCliente } from './entities/DireccionCliente';
 import { UploadFotoRequest } from './models/UploadFotoRequest';
 import { VehiculoRequest } from './models/VehiculoRequest';
+import { ResponseV2 } from './models/ResponseV2';
 
 dotenv.config({ path: __dirname+'/.env' });
 
@@ -1331,15 +1332,15 @@ app.post('/UpdateUsuarioPos', async(req, res)=>{
 });
 
 app.post('/GetParametros',async(req, res)=>{
-    var response:Response=new Response();
+    var response:ResponseV2=new ResponseV2();
     try
     {
         var params=await ParametrosB.GetParametros();
         if(params!=null)
         {
-            response.Message="";
-            response.Type=TypeResponse.Ok;
-            response.Value=JSON.stringify(params);
+            response.Message = "";
+            response.Type = TypeResponse.Ok;
+            response.Value = params;
         }
         else
         {
