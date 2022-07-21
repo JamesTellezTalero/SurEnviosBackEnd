@@ -1,7 +1,11 @@
-export class Response{
+/*
+    SRC/MODELS/ResponseV2
+**/
+
+export class ResponseV2{
     Type:TypeResponse;
     Message:string;
-    Value:string;
+    Value;
 }
 
 export enum TypeResponse{

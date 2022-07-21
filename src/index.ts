@@ -32,6 +32,7 @@ import { DireccionRequest } from './models/DireccionRequest';
 import { DireccionCliente } from './entities/DireccionCliente';
 import { UploadFotoRequest } from './models/UploadFotoRequest';
 import { VehiculoRequest } from './models/VehiculoRequest';
+import { ResponseV2 } from './models/ResponseV2';
 
 dotenv.config({ path: __dirname+'/.env' });
 
@@ -1289,7 +1290,7 @@ app.post('/UpdateUsuarioPos', async(req, res)=>{
 });
 
 app.post('/GetParametros',async(req, res)=>{
-    var response:Response=new Response();
+    var response= new ResponseV2();
     try
     {
         var params=await ParametrosB.GetParametros();
@@ -1297,7 +1298,7 @@ app.post('/GetParametros',async(req, res)=>{
         {
             response.Message="";
             response.Type=TypeResponse.Ok;
-            response.Value=JSON.stringify(params);
+            response.Value = params;
         }
         else
         {
@@ -1305,7 +1306,7 @@ app.post('/GetParametros',async(req, res)=>{
             response.Type=TypeResponse.Error;
             response.Value=null;
         }
-        res.send(response);
+        res.status(200).json({response});
     }
     catch(error)
     {
@@ -1313,7 +1314,7 @@ app.post('/GetParametros',async(req, res)=>{
         response.Message="Se presentó una excepcion no controlada, por favor contáctese con el proveedor del servicio";
         response.Type=TypeResponse.Error;
         response.Value=null;
-        res.send(response);
+        res.status(400).json({response});
     }
 
 });
